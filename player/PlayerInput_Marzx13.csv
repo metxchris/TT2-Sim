@@ -23,9 +23,9 @@
         552,RangedDamage,
         416,AllGold,EQUIPPED
         753,ChestGold,
-        0.49,CritChance,EQUIPPED
+        49,CritChance,EQUIPPED
         0.13,TitanHP,
-        0.21,ChestChance,
+        21,ChestChance,
         359,PetDamage,EQUIPPED
         1780,TapDamage,
         ,,

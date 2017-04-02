@@ -606,6 +606,6 @@ def run_simulation(input_csv, advanced_results=True):
     return (player, data)
 
 if __name__ == '__main__':
-    player, data = run_simulation('PlayerInput_marzx13.csv')
+    player, data = run_simulation('voodoo_PlayerInput.csv')
     #plot_results(player, data.stage)
-    plot_splash(player, data.stage)
+    #plot_splash(player, data.stage)
