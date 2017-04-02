@@ -15,9 +15,11 @@ def plot_results(player, stage):
     ax.set_title('$\\rm \log{(Total\ DPS)}\ vs. \log{(Boss\ HP)}$',
         fontsize=14, loc=('center'))
     ax.plot(stage.number[indices][::5], np.log(player.total_dps_array[indices][::5]),
-         'o', markersize=2, color='b', label='Total DPS')
+        'o',markersize=3, markeredgewidth=0.5, color='b',
+        fillstyle='none', label='Total DPS')
     ax.plot(stage.number[indices][::5], np.log(stage.boss_hp[indices][::5]),
-        'x', markersize=2, color='r', label='Boss HP')
+        'x',markersize=3, markeredgewidth=0.5, color='r',
+        fillstyle='none', label='Boss HP')
     legend = ax.legend(loc='upper left', frameon=False)
     plt.tight_layout()
     plt.show()
