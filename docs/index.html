@@ -44,7 +44,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 DAMAGE.
 " />
 <link id="faviconLink" rel="shortcut icon" href="favicon.ico">
-<title>TT2-Sim Results — A summary of results obtained using TT2-Sim</title>
+<title>TT2-Sim Results — </title>
 <!--~~ This is a Tiddlywiki file. The points of interest in the file are marked with this pattern ~~--><!--~~ Raw markup ~~-->
 
 </head>
@@ -131,15 +131,25 @@ Error message and password prompt
 
 <li>$:/core</li>
 
+<li>$:/core/ui/SideBar/More</li>
+
+<li>$:/core/ui/SideBar/Recent</li>
+
+<li>$:/core/ui/SideBar/Tools</li>
+
 <li>$:/DefaultTiddlers</li>
 
 <li>$:/Import</li>
 
 <li>$:/isEncrypted</li>
 
+<li>$:/palette</li>
+
 <li>$:/plugins/tiddlywiki/highlight</li>
 
 <li>$:/plugins/tiddlywiki/katex</li>
+
+<li>$:/plugins/tongerner/ro/sidebar-button</li>
 
 <li>$:/SiteSubtitle</li>
 
@@ -147,13 +157,23 @@ Error message and password prompt
 
 <li>$:/state/folded/$:/ControlPanel</li>
 
+<li>$:/state/showeditpreview</li>
+
+<li>$:/state/tab--1498284803</li>
+
 <li>$:/state/tab--1963855381</li>
 
 <li>$:/state/tab--2112689675</li>
 
+<li>$:/state/tab--86143343</li>
+
 <li>$:/state/tab--959111941</li>
 
+<li>$:/state/tab-1342078386</li>
+
 <li>$:/state/tab-1749438307</li>
+
+<li>$:/state/tab/moresidebar-401116514</li>
 
 <li>$:/state/tab/sidebar--1835078512</li>
 
@@ -162,6 +182,8 @@ Error message and password prompt
 <li>$:/status/UserName</li>
 
 <li>$:/StoryList</li>
+
+<li>$:/temp/advancedsearch</li>
 
 <li>$:/temp/info-plugin</li>
 
@@ -277,7 +299,15 @@ Error message and password prompt
 
 <li>$:/temp/RemoteAssetInfo/http://tiddlywiki.com/library/v5.1.13/index.html/$:/themes/tiddlywiki/vanilla</li>
 
+<li>$:/temp/search</li>
+
 <li>$:/temp/ServerConnection/http://tiddlywiki.com/library/v5.1.13/index.html</li>
+
+<li>$:/theme</li>
+
+<li>$:/themes/tiddlywiki/centralised</li>
+
+<li>$:/themes/tiddlywiki/readonly</li>
 
 <li>$:/themes/tiddlywiki/snowwhite</li>
 
@@ -291,7 +321,7 @@ Error message and password prompt
 
 <li>$:/themes/tiddlywiki/vanilla/metrics/tiddlerwidth</li>
 
-<li>Splash Results</li>
+<li>Splash Rework</li>
 
 <li>splash_to_2200.png</li>
 
@@ -7974,19 +8004,61 @@ Error message and password prompt
     }
 }</pre>
 </div>
-<div created="20170402212010463" modified="20170402212017820" title="$:/DefaultTiddlers">
-<pre>[[Splash Results]]
+<div caption="{{$:/language/SideBar/More/Caption}}" created="20170402222006626" creator="MetxChris" modified="20170402223825930" modifier="MetxChris" tags="$:/tags/hide $:/tags/SideBar" title="$:/core/ui/SideBar/More">
+<pre>&lt;div class=&quot;tc-more-sidebar&quot;&gt;
+&lt;&lt;tabs &quot;[all[shadows+tiddlers]tag[$:/tags/MoreSideBar]!has[draft.of]]&quot; &quot;$:/core/ui/MoreSideBar/Tags&quot; &quot;$:/state/tab/moresidebar&quot; &quot;tc-vertical&quot;&gt;&gt;
+&lt;/div&gt;
+</pre>
+</div>
+<div caption="{{$:/language/SideBar/Recent/Caption}}" created="20170402222005717" creator="MetxChris" modified="20170402223833735" modifier="MetxChris" tags="$:/tags/hide $:/tags/SideBar" title="$:/core/ui/SideBar/Recent">
+<pre>&lt;$macrocall $name=&quot;timeline&quot; format={{$:/language/RecentChanges/DateFormat}}/&gt;
+</pre>
+</div>
+<div caption="{{$:/language/SideBar/Tools/Caption}}" created="20170402221622351" creator="MetxChris" modified="20170402223832293" modifier="MetxChris" tags="$:/tags/hide $:/tags/SideBar" title="$:/core/ui/SideBar/Tools">
+<pre>\define lingo-base() $:/language/ControlPanel/
+\define config-title()
+$:/config/PageControlButtons/Visibility/$(listItem)$
+\end
+
+&lt;&lt;lingo Basics/Version/Prompt&gt;&gt; &lt;&lt;version&gt;&gt;
+
+&lt;$set name=&quot;tv-config-toolbar-icons&quot; value=&quot;yes&quot;&gt;
+
+&lt;$set name=&quot;tv-config-toolbar-text&quot; value=&quot;yes&quot;&gt;
+
+&lt;$set name=&quot;tv-config-toolbar-class&quot; value=&quot;&quot;&gt;
+
+&lt;$list filter=&quot;[all[shadows+tiddlers]tag[$:/tags/PageControls]!has[draft.of]]&quot; variable=&quot;listItem&quot;&gt;
+
+&lt;div style=&quot;position:relative;&quot;&gt;
+
+&lt;$checkbox tiddler=&lt;&lt;config-title&gt;&gt; field=&quot;text&quot; checked=&quot;show&quot; unchecked=&quot;hide&quot; default=&quot;show&quot;/&gt; &lt;$transclude tiddler=&lt;&lt;listItem&gt;&gt;/&gt; &lt;i class=&quot;tc-muted&quot;&gt;&lt;$transclude tiddler=&lt;&lt;listItem&gt;&gt; field=&quot;description&quot;/&gt;&lt;/i&gt;
+
+&lt;/div&gt;
+
+&lt;/$list&gt;
+
+&lt;/$set&gt;
+
+&lt;/$set&gt;
+
+&lt;/$set&gt;
+</pre>
+</div>
+<div created="20170402212010463" creator="MetxChris" modified="20170402231700796" modifier="MetxChris" title="$:/DefaultTiddlers">
+<pre>[[Splash Rework]]
 </pre>
 </div>
 <div status="complete" title="$:/Import">
 <pre>The following tiddlers were imported:
 
-# [[splash_to_3500.png]]
-# [[splash_to_2800.png]]
-# [[splash_to_2200.png]]</pre>
+# [[$:/plugins/tongerner/ro]]</pre>
 </div>
 <div title="$:/isEncrypted">
 <pre>no</pre>
+</div>
+<div created="20170402220807337" creator="MetxChris" modified="20170402220852430" modifier="MetxChris" title="$:/palette">
+<pre>$:/palettes/Vanilla</pre>
 </div>
 <div author="JoaoBolila" core-version="&gt;=5.0.0" dependents="" description="Highlight.js: syntax highlighting" list="readme usage license" plugin-type="plugin" title="$:/plugins/tiddlywiki/highlight" type="application/json" version="5.1.13">
 <pre>{
@@ -8172,29 +8244,55 @@ Error message and password prompt
     }
 }</pre>
 </div>
-<div created="20170402210429696" modified="20170402210438071" title="$:/SiteSubtitle">
-<pre>A summary of results obtained using TT2-Sim</pre>
+<div created="20140715185800387" creator="TonGerner" modified="20170402222956810" modifier="MetxChris" tags="$:/tags/sidebar-button" title="$:/plugins/tongerner/ro/sidebar-button" type="text/css">
+<pre>/* Hide sidebar button */
+svg.tc-image-chevron-left {
+     display: none;
+}
+
+svg.tc-image-chevron-right {
+     display: none;
+}
+</pre>
+</div>
+<div created="20170402210429696" creator="MetxChris" modified="20170402220706009" modifier="MetxChris" title="$:/SiteSubtitle">
+<pre></pre>
 </div>
 <div created="20170402210421091" modified="20170402210424861" title="$:/SiteTitle">
 <pre>TT2-Sim Results</pre>
 </div>
-<div created="20170402212453840" creator="MetxChris" modified="20170402213015753" modifier="MetxChris" title="$:/state/folded/$:/ControlPanel">
-<pre>hide</pre>
+<div created="20170402212453840" creator="MetxChris" modified="20170402215826026" modifier="MetxChris" title="$:/state/folded/$:/ControlPanel">
+<pre>show</pre>
 </div>
-<div created="20170402210523618" creator="MetxChris" modified="20170402213009169" modifier="MetxChris" title="$:/state/tab--1963855381">
-<pre>$:/core/ui/ControlPanel/Toolbars</pre>
+<div created="20170402225601045" creator="MetxChris" modified="20170402225601045" modifier="MetxChris" title="$:/state/showeditpreview">
+<pre>yes</pre>
 </div>
-<div created="20170402212128056" creator="MetxChris" modified="20170402212128056" modifier="MetxChris" title="$:/state/tab--2112689675">
-<pre>$:/core/ui/ControlPanel/Advanced</pre>
+<div created="20170402220719318" creator="MetxChris" modified="20170402220719318" modifier="MetxChris" title="$:/state/tab--1498284803">
+<pre>$:/core/ui/AdvancedSearch/Filter</pre>
 </div>
-<div created="20170402212134379" creator="MetxChris" modified="20170402212134379" modifier="MetxChris" title="$:/state/tab--959111941">
-<pre>$:/core/ui/ControlPanel/Parsing</pre>
+<div created="20170402210523618" creator="MetxChris" modified="20170402223409410" modifier="MetxChris" title="$:/state/tab--1963855381">
+<pre>$:/core/ui/ControlPanel/Theme</pre>
 </div>
-<div created="20170402210517922" creator="MetxChris" modified="20170402213012754" modifier="MetxChris" title="$:/state/tab-1749438307">
-<pre>$:/core/ui/ControlPanel/KeyboardShortcuts</pre>
+<div created="20170402212128056" creator="MetxChris" modified="20170402220700818" modifier="MetxChris" title="$:/state/tab--2112689675">
+<pre>$:/core/ui/ControlPanel/Basics</pre>
 </div>
-<div created="20170402211205050" creator="MetxChris" modified="20170402212257890" modifier="MetxChris" title="$:/state/tab/sidebar--1835078512">
-<pre>$:/core/ui/SideBar/Tools</pre>
+<div created="20170402220034703" creator="MetxChris" modified="20170402222308027" modifier="MetxChris" title="$:/state/tab--86143343">
+<pre>$:/core/ui/ControlPanel/Plugins/Installed/Plugins</pre>
+</div>
+<div created="20170402212134379" creator="MetxChris" modified="20170402220658131" modifier="MetxChris" title="$:/state/tab--959111941">
+<pre>$:/core/ui/ControlPanel/EditorTypes</pre>
+</div>
+<div created="20170402215925072" creator="MetxChris" modified="20170402222357680" modifier="MetxChris" title="$:/state/tab-1342078386">
+<pre>$:/core/ui/ControlPanel/Plugins/Add/Plugins</pre>
+</div>
+<div created="20170402210517922" creator="MetxChris" modified="20170402231655045" modifier="MetxChris" title="$:/state/tab-1749438307">
+<pre>$:/core/ui/ControlPanel/Info</pre>
+</div>
+<div created="20170402220435145" creator="MetxChris" modified="20170402222738233" modifier="MetxChris" title="$:/state/tab/moresidebar-401116514">
+<pre>$:/core/ui/MoreSideBar/All</pre>
+</div>
+<div created="20170402211205050" creator="MetxChris" modified="20170402231645320" modifier="MetxChris" title="$:/state/tab/sidebar--1835078512">
+<pre>$:/core/ui/SideBar/Recent</pre>
 </div>
 <div created="20170402212557686" creator="MetxChris" modified="20170402212647142" modifier="MetxChris" title="$:/state/tabs/controlpanel/toolbars-1345989671">
 <pre>$:/core/ui/ControlPanel/Toolbars/ViewToolbar</pre>
@@ -8202,8 +8300,11 @@ Error message and password prompt
 <div created="20170402212055001" creator="M" modified="20170402212056463" modifier="MetxChri" title="$:/status/UserName">
 <pre>MetxChris</pre>
 </div>
-<div list="$:/Import $:/ControlPanel [[Splash Results]]" title="$:/StoryList">
+<div list="$:/ControlPanel [[Splash Rework]] [[Splash Results]]" title="$:/StoryList">
 <pre></pre>
+</div>
+<div created="20170402220719317" creator="MetxChris" modified="20170402223754371" modifier="MetxChris" title="$:/temp/advancedsearch">
+<pre>$:/ControlPanel</pre>
 </div>
 <div plugin-type="info" title="$:/temp/info-plugin" type="application/json">
 <pre>{
@@ -8552,8 +8653,36 @@ This plugin contains tools to help slice up long texts into individual tiddlers.
 <div author="JeremyRuston" core-version="&gt;=5.0.0" created="20170402210835085" dependents="" description="Basic theme" modified="20170402210835085" name="Vanilla" original-plugin-type="theme" original-tags="" original-title="$:/themes/tiddlywiki/vanilla" original-type="application/json" server-url="http://tiddlywiki.com/library/v5.1.13/index.html" tags="$:/tags/RemoteAssetInfo" title="$:/temp/RemoteAssetInfo/http://tiddlywiki.com/library/v5.1.13/index.html/$:/themes/tiddlywiki/vanilla" type="text/vnd.tiddlywiki" version="5.1.13">
 <pre></pre>
 </div>
-<div created="20170402210834637" modified="20170402210834637" tags="$:/tags/ServerConnection" title="$:/temp/ServerConnection/http://tiddlywiki.com/library/v5.1.13/index.html" url="http://tiddlywiki.com/library/v5.1.13/index.html">
+<div created="20170402220535974" creator="MetxChris" modified="20170402223754372" modifier="MetxChris" title="$:/temp/search">
+<pre></pre>
+</div>
+<div created="20170402215950711" creator="MetxChris" modified="20170402215950713" modifier="MetxChris" tags="$:/tags/ServerConnection" title="$:/temp/ServerConnection/http://tiddlywiki.com/library/v5.1.13/index.html" url="http://tiddlywiki.com/library/v5.1.13/index.html">
 <pre>loaded</pre>
+</div>
+<div created="20170402220056302" creator="MetxChris" modified="20170402223759933" modifier="MetxChris" title="$:/theme">
+<pre>$:/themes/tiddlywiki/snowwhite</pre>
+</div>
+<div author="JeremyRuston" core-version="&gt;=5.0.0" dependents="$:/themes/tiddlywiki/snowwhite" description="Centralises the story river" name="Centralised" plugin-type="theme" title="$:/themes/tiddlywiki/centralised" type="application/json" version="5.1.13">
+<pre>{
+    &quot;tiddlers&quot;: {
+        &quot;$:/themes/tiddlywiki/centralised/styles.tid&quot;: {
+            &quot;title&quot;: &quot;$:/themes/tiddlywiki/centralised/styles.tid&quot;,
+            &quot;tags&quot;: &quot;[[$:/tags/Stylesheet]]&quot;,
+            &quot;text&quot;: &quot;\\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline\n\n@media (min-width: {{$:/themes/tiddlywiki/vanilla/metrics/sidebarbreakpoint}}) {\n\n\thtml .tc-page-container {\n\t\ttext-align: center;\n\t}\n\n\thtml .tc-story-river {\n\t\tposition: relative;\n\t\twidth: 770px;\n\t\tpadding: 42px;\n\t\tmargin: 0 auto;\n\t\ttext-align: left;\n\t}\n\n\thtml .tc-sidebar-scrollable {\n\t\ttext-align: left;\n\t\tleft: 50%;\n\t\tright: 0;\n\t\tmargin-left: 343px;\n\t}\n}\n&quot;
+        }
+    }
+}</pre>
+</div>
+<div author="JeremyRuston" core-version="&gt;=5.0.0" dependents="$:/themes/tiddlywiki/snowwhite" description="Hides the ability to edit tiddlers" name="ReadOnly" plugin-type="theme" title="$:/themes/tiddlywiki/readonly" type="application/json" version="5.1.13">
+<pre>{
+    &quot;tiddlers&quot;: {
+        &quot;$:/themes/tiddlywiki/readonly/styles.tid&quot;: {
+            &quot;title&quot;: &quot;$:/themes/tiddlywiki/readonly/styles.tid&quot;,
+            &quot;tags&quot;: &quot;[[$:/tags/Stylesheet]]&quot;,
+            &quot;text&quot;: &quot;\\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline\n\nsvg.tc-image-new-button, svg.tc-image-options-button, svg.tc-image-save-button, svg.tc-image-edit-button, svg.tc-image-delete-button, svg.tc-image-cancel-button, svg.tc-image-done-button {\n\tdisplay: none;\t\n}\n&quot;
+        }
+    }
+}</pre>
 </div>
 <div author="JeremyRuston" core-version="&gt;=5.0.0" dependents="$:/themes/tiddlywiki/vanilla" description="Emphasises individual tiddlers" name="Snow White" plugin-type="theme" title="$:/themes/tiddlywiki/snowwhite" type="application/json" version="5.1.13">
 <pre>{
@@ -8676,9 +8805,20 @@ This plugin contains tools to help slice up long texts into individual tiddlers.
 <div created="20170402210703943" modified="20170402210704612" title="$:/themes/tiddlywiki/vanilla/metrics/tiddlerwidth">
 <pre>786px</pre>
 </div>
-<div created="20170402211038608" creator="MetxChris" modified="20170402213315828" modifier="MetxChris" tags="" title="Splash Results">
-<pre>
-[img[splash_to_2200.png]]
+<div created="20170402211038608" creator="MetxChris" modified="20170402231611515" modifier="MetxChris" tags="" title="Splash Rework">
+<pre>The benefits of the splash skill in the skill tree currently don't offer a player much reason to invest points in this skill.  This is because there is little difference in splash ability between having a passive splash factor of 0.002 and 0.01.  This mean that the bonus from Kit is good enough in regards to splash kills.
+
+(insert splash level 1 vs splash level 20 comparison)
+
+In order to make splash skill upgrades appealing and worthwhile, we propose that each skill level increases both the maximum splash-kill cap as well as splash damage.  However, since the splash amount falls off very quickly from x20 to x1 in regards to stage advancement, we require a splash penalty per each additional splash kill to balance the increased splash cap.  A proposed splash model involving a penalty includes the factor $$y$$, where $$n_s = \max\{{n\geq 0}\}$$ is the number of splashed Titans such that,
+$$
+d_s \geq n \ y^{n-1}\ h_T,
+$$
+for splash damage $$d_s$$ and Titan HP $$h_T$$.  This is equivalent to the current in-game model for $$y=1$$.
+
+A comparison over various stage ranges between the default value and a penalty factor $$y=2$$ are given below:
+
+[img [splash_to_2200.png]]
 [img[splash_to_2800.png]]
 [img[splash_to_3500.png]]
 [img[splash_to_4500.png]]</pre>
