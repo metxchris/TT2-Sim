@@ -1,6 +1,6 @@
     GENERAL INPUT VALUES, (VALUE NAME NOTES),
 424,ClanLevel,
-2000,StartStage,
+1,StartStage,
 5000,StageCap,(Max=5500)
 6000,HeroLevelCap,
 20,TapsPerSec,(Max=20)

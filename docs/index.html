@@ -149,6 +149,8 @@ Error message and password prompt
 
 <li>$:/plugins/tiddlywiki/katex</li>
 
+<li>$:/plugins/tiddlywiki/katex/latex-parser.js</li>
+
 <li>$:/plugins/tongerner/ro/sidebar-button</li>
 
 <li>$:/SiteSubtitle</li>
@@ -8244,6 +8246,78 @@ $:/config/PageControlButtons/Visibility/$(listItem)$
     }
 }</pre>
 </div>
+<div created="20170402233236006" creator="MetxChris" modified="20170402233749112" modifier="MetxChris" module-type="wikirule" title="$:/plugins/tiddlywiki/katex/latex-parser.js" type="application/javascript">
+<pre>/*\
+title: $:/plugins/tiddlywiki/katex/latex-parser.js
+type: application/javascript
+module-type: wikirule
+
+Wiki text inline rule for LaTeX. For example:
+
+```
+    $$latex-goes-here$$
+```
+
+This wikiparser can be modified using the rules eg:
+
+```
+\rules except latex-parser 
+\rules only latex-parser 
+```
+
+\*/
+(function(){
+
+/*jslint node: true, browser: true */
+/*global $tw: false */
+&quot;use strict&quot;;
+
+exports.name = &quot;latex-parser&quot;;
+exports.types = {inline: true};
+
+exports.init = function(parser) {
+    this.parser = parser;
+    // Regexp to match
+    this.matchRegExp = /\$\$(?!\$)/mg;
+};
+
+exports.parse = function() {
+    // Move past the match
+    this.parser.pos = this.matchRegExp.lastIndex;
+    var reEnd = /\$\$/mg;
+    // Look for the end marker
+    reEnd.lastIndex = this.parser.pos;
+    var match = reEnd.exec(this.parser.source),
+        text,
+        displayMode;
+    // Process the text
+    if(match) {
+        text = this.parser.source.substring(this.parser.pos,match.index);
+        displayMode = text.indexOf('\n') != -1;
+        this.parser.pos = match.index + match[0].length;
+    } else {
+        text = this.parser.source.substr(this.parser.pos);
+        displayMode = false;
+        this.parser.pos = this.parser.sourceLength;
+    }
+    return [{
+        type: &quot;latex&quot;,
+        attributes: {
+            text: {
+                type: &quot;text&quot;,
+                value: text
+            },
+            displayMode: {
+                type: &quot;text&quot;,
+                value: displayMode ? &quot;true&quot; : &quot;false&quot;
+            }
+        }
+    }];
+};
+
+})();
+</pre>
+</div>
 <div created="20140715185800387" creator="TonGerner" modified="20170402222956810" modifier="MetxChris" tags="$:/tags/sidebar-button" title="$:/plugins/tongerner/ro/sidebar-button" type="text/css">
 <pre>/* Hide sidebar button */
 svg.tc-image-chevron-left {
@@ -8264,7 +8338,7 @@ svg.tc-image-chevron-right {
 <div created="20170402212453840" creator="MetxChris" modified="20170402215826026" modifier="MetxChris" title="$:/state/folded/$:/ControlPanel">
 <pre>show</pre>
 </div>
-<div created="20170402225601045" creator="MetxChris" modified="20170402225601045" modifier="MetxChris" title="$:/state/showeditpreview">
+<div created="20170402225601045" creator="MetxChris" modified="20170402233437336" modifier="MetxChris" title="$:/state/showeditpreview">
 <pre>yes</pre>
 </div>
 <div created="20170402220719318" creator="MetxChris" modified="20170402220719318" modifier="MetxChris" title="$:/state/tab--1498284803">
@@ -8285,8 +8359,8 @@ svg.tc-image-chevron-right {
 <div created="20170402215925072" creator="MetxChris" modified="20170402222357680" modifier="MetxChris" title="$:/state/tab-1342078386">
 <pre>$:/core/ui/ControlPanel/Plugins/Add/Plugins</pre>
 </div>
-<div created="20170402210517922" creator="MetxChris" modified="20170402231655045" modifier="MetxChris" title="$:/state/tab-1749438307">
-<pre>$:/core/ui/ControlPanel/Info</pre>
+<div created="20170402210517922" creator="MetxChris" modified="20170402232354615" modifier="MetxChris" title="$:/state/tab-1749438307">
+<pre>$:/core/ui/ControlPanel/Plugins</pre>
 </div>
 <div created="20170402220435145" creator="MetxChris" modified="20170402222738233" modifier="MetxChris" title="$:/state/tab/moresidebar-401116514">
 <pre>$:/core/ui/MoreSideBar/All</pre>
@@ -8300,7 +8374,7 @@ svg.tc-image-chevron-right {
 <div created="20170402212055001" creator="M" modified="20170402212056463" modifier="MetxChri" title="$:/status/UserName">
 <pre>MetxChris</pre>
 </div>
-<div list="$:/ControlPanel [[Splash Rework]] [[Splash Results]]" title="$:/StoryList">
+<div list="[[Splash Rework]]" title="$:/StoryList">
 <pre></pre>
 </div>
 <div created="20170402220719317" creator="MetxChris" modified="20170402223754371" modifier="MetxChris" title="$:/temp/advancedsearch">
@@ -8805,7 +8879,7 @@ This plugin contains tools to help slice up long texts into individual tiddlers.
 <div created="20170402210703943" modified="20170402210704612" title="$:/themes/tiddlywiki/vanilla/metrics/tiddlerwidth">
 <pre>786px</pre>
 </div>
-<div created="20170402211038608" creator="MetxChris" modified="20170402231611515" modifier="MetxChris" tags="" title="Splash Rework">
+<div created="20170402211038608" creator="MetxChris" modified="20170402233844805" modifier="MetxChris" tags="" title="Splash Rework">
 <pre>The benefits of the splash skill in the skill tree currently don't offer a player much reason to invest points in this skill.  This is because there is little difference in splash ability between having a passive splash factor of 0.002 and 0.01.  This mean that the bonus from Kit is good enough in regards to splash kills.
 
 (insert splash level 1 vs splash level 20 comparison)

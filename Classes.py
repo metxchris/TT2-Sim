@@ -392,4 +392,4 @@ def letters(sci_number, option=''):
 
 if __name__ == '__main__':
     # Run directly to print out input values.
-    GameData('PlayerInput_2.csv').print_info()
+    GameData('voodoo_playerinput.csv').print_info()
