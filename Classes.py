@@ -43,11 +43,15 @@ class ActiveSkills(object):
         z = np.array([0])
         cs_skill = max(z, skill_levels[(types=='CriticalStrike')*active])[0]+1
         hom_skill = max(z, skill_levels[(types=='HandOfMidas')*active])[0]+1
+        fs_skill = max(z, skill_levels[(types=='FireSword')*active])[0]+1
         wc_skill = max(z, skill_levels[(types=='WarCry')*active])[0]+1
+        sc_skill = max(z, skill_levels[(types=='ShadowClone')*active])[0]+1
 
         self.crit_strike = csv_data[cs_skill, 2].astype(np.float)
         self.hom = csv_data[hom_skill, 3].astype(np.float)
+        self.fire_sword = csv_data[fs_skill, 4].astype(np.float)
         self.war_cry = csv_data[wc_skill, 5].astype(np.float)
+        self.shadow_clone = csv_data[sc_skill, 6].astype(np.float)
 
 
 class Artifacts(object):
@@ -406,4 +410,4 @@ def letters(sci_number, option=''):
 
 if __name__ == '__main__':
     # Run directly to print out input values.
-    GameData('voodoo_playerinput.csv').print_info()
+    GameData('PlayerInput.csv').print_info()

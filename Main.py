@@ -9,9 +9,9 @@ from ServerVarsModel import SVM
 
 """
 TODO:
-2. Add Equipment CSV, test if works (it doesn't).
-3. Sci format option (you heathens).
-4. Add FS + SC and splash results.
+1. Add Equipment CSV, test if works (it doesn't).
+2. Sci notation option (you heathens).
+3. Create new class to organize bonuses.
 """
 
 class Player(object):
@@ -95,6 +95,7 @@ class Player(object):
         self.tap_dps = 0
         self.total_dps = 0
         self.total_boss_dps = 0
+        self.shadow_clone_dps = 0
         self.gold_spent = 0
 
         # Values stored for each stage.
@@ -114,6 +115,10 @@ class Player(object):
             * artifacts.effect[artifacts.name=='Laborer\'s Pendant'][0])
         self.war_cry = max(1, active_skills.war_cry
             * artifacts.effect[artifacts.name=='Parchment of Foresight'][0])
+        self.fire_sword = max(1, active_skills.fire_sword
+            * artifacts.effect[artifacts.name=='Bringer of Ragnarok'][0])
+        self.shadow_clone = max(1, active_skills.shadow_clone
+            * artifacts.effect[artifacts.name=='Elixir of Eden'][0])
 
         # Pet damage multiplier.
         self.pet_mult = (pets.damage_mult
@@ -393,7 +398,7 @@ class Player(object):
             self.tap_with_average_crit = (self.tap_damage
                 * (1 + self.crit_chance*self.crit_damage
                     * (SVM.playerCritMinMult + SVM.playerCritMaxMult)/2))
-            self.average_tap_damage = (self.tap_damage
+            self.average_tap_damage = (self.tap_damage*self.fire_sword
                 * (1 - self.crit_chance + self.crit_chance*self.crit_damage
                     * (SVM.playerCritMinMult + SVM.playerCritMaxMult)/2))
             self.tap_dps = self.average_tap_damage*self.taps_sec
@@ -403,9 +408,13 @@ class Player(object):
                 self.total_hero_dps)
             self.pet_dps = self.pet_rate*self.pet_damage_per_attack
 
+            # Fire Sword applied after pet damage calc.
+            self.tap_damage *= self.fire_sword
+            self.shadow_clone_dps = self.tap_with_average_crit*self.shadow_clone
+
             # Total DPS: flash zip assumes two full zips are completed during the fight.
             self.total_dps = (self.pet_dps + self.total_hero_dps + self.tap_dps
-                + self.ship_damage*SVM.clanShipAttackRate)
+                + self.ship_damage*SVM.clanShipAttackRate + self.shadow_clone_dps)
             self.total_boss_dps = self.total_dps + self.flash_zip*self.pet_damage_per_attack
 
         # Store total DPS and pet attack damage per stage.
@@ -648,5 +657,5 @@ if __name__ == '__main__':
     player, stage = run_simulation('PlayerInput.csv')
     #plot_results(player, stage)
     #plot_tap_damage(player, stage)
-    plot_dps(player, stage)
+    #plot_dps(player, stage)
     #plot_splash(player, stage)
