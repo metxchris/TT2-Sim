@@ -17,14 +17,14 @@ The simulation was designed as a a basic version of the TT2 game engine.  While 
 
 # Sample Plots
 <div style="width:1000px;margin:auto">
-<img src="splash_1000_2710" alt="Splash Comparison" width="350" style="float:left; display:inline;"/><img src="./images/dps_tap20.png" alt="Splash Comparison" width="350" style="float:left; display:inline;"/>
+<img src="splash_1000_2710.png" alt="Splash Comparison" width="350" style="float:left; display:inline;"/><img src="./images/dps_tap20.png" alt="Splash Comparison" width="350" style="float:left; display:inline;"/>
 </div>
 
 There is great potential for model analysis using TT2-Sim. A full overview of various of results obtained and studies performed using the sim will be posted on the repository's [Wiki](https://metxchris.github.io/TT2-Sim/).
 
 # Sample Text Output
 
-```python
+```Markdown
     GENERAL RESULTS:
         Final Stage: 3350, Boss HP: 50.07cg, Damage: 48.23cg
         Hero Levels: [4000 4000 4000 4000 4000 4000 4000 4000] 
