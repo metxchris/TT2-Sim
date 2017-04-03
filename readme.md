@@ -79,5 +79,5 @@ There is great potential for model analysis using TT2-Sim. A full overview of va
                      [3036 3311    0    0    0]
 ```
 
-# Special Thanks
-Special thanks to Marxz13 for collaborating with me on various gameplay aspects and helping me test for accuracy issues.  Also thanks to [Colblitz](https://github.com/colblitz) for helping me find several gameplay formulas I was missing.  Additionally, Byungshin was very helpful in helping me nail down a errors bugs in the gold calculations.
+# Credit
+Special thanks to Marxz13 for collaborating with me on various gameplay aspects, testing for accuracy issues, and being a great community resource.  Also thanks to [Colblitz](https://github.com/colblitz) for helping me find several gameplay formulas I was missing.  Additionally, thanks to Byungshin for helping me nail down a few errors bugs in the gold calculations.
