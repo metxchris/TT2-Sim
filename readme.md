@@ -16,8 +16,8 @@ In order to use TT2-Sim, you will need to download the repository to a local dir
 The simulation was designed as a a basic version of the TT2 game engine.  While several simplifications are made, the result is an extremely accurate picture of your game performance.  The code itself is well-commented, so read through the Main.py file for more details on the processes used.
 
 # Sample Plots
-<div style="width:1000px;">
-<img src="./images/dps_tap20.png" alt="Splash Comparison" width="350" style="float:left; display:inline;"/><img src="./images/dps_tap20.png" alt="Splash Comparison" width="350" style="float:left; display:inline;"/>
+<div style="width:1000px;margin:auto">
+<img src="splash_1000_2710" alt="Splash Comparison" width="350" style="float:left; display:inline;"/><img src="./images/dps_tap20.png" alt="Splash Comparison" width="350" style="float:left; display:inline;"/>
 </div>
 
 There is great potential for model analysis using TT2-Sim. A full overview of various of results obtained and studies performed using the sim will be posted on the repository's [Wiki](https://metxchris.github.io/TT2-Sim/).
@@ -79,4 +79,4 @@ There is great potential for model analysis using TT2-Sim. A full overview of va
 ```
 
 # Special Thanks
-Special thanks to Marxz13 for collaborating with me on various gameplay aspects and helping me test for accuracy issues.  Also thanks to [Colblitz](https://github.com/colblitz) for getting me access to several of the gameplay formulas I was missing.  Additionally, Byungshin was very helpful in helping me nail down a errors bugs in the gold calculations.
+Special thanks to Marxz13 for collaborating with me on various gameplay aspects and helping me test for accuracy issues.  Also thanks to [Colblitz](https://github.com/colblitz) for helping me find several gameplay formulas I was missing.  Additionally, Byungshin was very helpful in helping me nail down a errors bugs in the gold calculations.
