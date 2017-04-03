@@ -3,7 +3,7 @@
     1,StartStage,
     3500,StageCap,(Max=5500)
     4000,HeroLevelCap,
-    20,TapsPerSec,(Max=20)
+    1,TapsPerSec,(Max=20)
     50,ClanSize,
     ,,
     ACTIVE SKILL LEVELS, (LEVEL NAME ACTIVATED),

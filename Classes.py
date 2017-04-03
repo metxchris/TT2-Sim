@@ -16,6 +16,7 @@ class GameData(object):
         self.hero_skills = HeroSkills(self.heroes.id.size)
         self.pets = Pets(self.input)
         self.skill_tree = SkillTree(self.input)
+        self.sword_master = SwordMaster()
         self.stage = Stage(self.input, self.skill_tree, self.equipment.titan_hp)
 
     def print_info(self, stage_skip_factor=100):
@@ -299,6 +300,19 @@ class SkillTree(object):
                 ' \t'+str(self.effect[i]).rjust(6))
         
 
+class SwordMaster(object):
+    def __init__(self):
+        improvements_info = np.genfromtxt('csv\PlayerImprovementsInfo.csv', 
+            delimiter=',', dtype=np.string_)   
+        
+        self.levels = improvements_info[1:,0].astype(np.int)
+        self.level_cap = self.levels.max()
+        level_bonuses = improvements_info[1:,1].astype(np.float)
+        self.multipliers = np.zeros_like(level_bonuses)
+        for i, m in enumerate(level_bonuses):
+            self.multipliers[i] = level_bonuses[:i+1].prod()
+
+
 class Stage(object):
     def __init__(self, input_csv, skill_tree, hp_multiplier):
         # Initialize Stage Information.
@@ -358,7 +372,7 @@ def letters(sci_number, option=''):
     if option.find('%')+1:
         sci_number *= 100
 
-    if sci_number>0:
+    if sci_number>1:
         # Extract exponent value.
         exponent_value = np.floor(np.log10(np.abs(float(sci_number)))).astype(int)
         exp_decimal_part, exp_whole_part = modf(exponent_value/3)

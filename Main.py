@@ -9,10 +9,9 @@ from ServerVarsModel import SVM
 
 """
 TODO:
-1. Add Sword Master damage.
 2. Add Equipment CSV, test if works (it doesn't).
-3. Sci format option.
-4. SwordMaster upgrades + FS + SC
+3. Sci format option (you heathens).
+4. Add FS + SC and splash results.
 """
 
 class Player(object):
@@ -28,6 +27,7 @@ class Player(object):
         hero_skills = data.hero_skills
         active_skills = data.active_skills
         stage = data.stage
+        sword_master = data.sword_master
 
         # Pull general input values from PlayerInput.CSV.
         start_idx = np.array([input_csv[:,0]=='GENERAL INPUT VALUES']).argmax()+1
@@ -64,11 +64,15 @@ class Player(object):
         self.time = 0
 
         # Initialize variables to be updated later.
+        self.sword_level_cap = sword_master.level_cap
+        self.sword_master_bought = False
         self.sword_master_damage =0
         self.sword_master_level = 0
+        self.sword_master_multiplier = 0
         self.pet_damage_per_attack = 0
         self.tap_damage_from_hero = 0
         self.tap_with_average_crit = 0
+        self.average_tap_damage = 0
         self.crit_damage = 0
         self.crit_chance = 0
         self.boss_gold = 0
@@ -88,13 +92,17 @@ class Player(object):
         self.spell_dps = 0
         self.ranged_dps = 0
         self.pet_dps = 0
+        self.tap_dps = 0
         self.total_dps = 0
         self.total_boss_dps = 0
         self.gold_spent = 0
 
         # Values stored for each stage.
         self.pet_attack_damage_array = np.zeros_like(stage.number, dtype=np.float)
+        self.tap_damage_array = np.zeros((stage.number.size, 2), dtype=np.float)
         self.total_dps_array = np.zeros_like(stage.number, dtype=np.float)
+        self.hero_dps_array = np.zeros_like(stage.number, dtype=np.float)
+        self.tap_dps_array = np.zeros_like(stage.number, dtype=np.float)
         self.gold_array = np.zeros((stage.number.size, 3), dtype=np.float)
 
         # Clan Quest Bonus.
@@ -149,7 +157,7 @@ class Player(object):
             * artifacts.effect[artifacts.name=='The Sword of Storms'][0]
             * max(1, skill_tree.effect[skill_tree.attributes=='RangedHelperDmg'][0])
             * equipment.ranged_mult)
-        self.base_tap_mult = (pet_bv[pet_bt=='TapDamage'].prod() #not used
+        self.base_tap_mult = (pet_bv[pet_bt=='TapDamage'].prod()
             * artifacts.effect[artifacts.name=='Drunken Hammer'][0]
             * equipment.tap_damage) 
         self.splash_damage = (pet_bv[pet_bt=='SplashDamage'][0]
@@ -176,11 +184,38 @@ class Player(object):
             + equipment.crit_chance/100 + active_skills.crit_strike/100)
         self.cost_reduction = artifacts.effect[artifacts.name=='Staff of Radiance'][0]
 
-        # Starting gold (gives boss gold of all stages skipped with min = 30 gold)
+        # Starting gold (gives 20x titan gold from previous stage with min = 30 gold)
         self.stage = self.start_stage
-        self.gold_array[0:self.stage, 0] = (3*stage.base_boss_gold[:self.stage]
-            *self.base_boss_gold*self.base_all_gold)
-        self.current_gold = self.gold_array.sum()
+        self.current_gold = (20*stage.base_titan_gold[self.stage-1]
+            *self.base_titan_gold*self.base_all_gold)
+
+    def buy_sword_master(self, sword_master):
+        """ Buys Sword Master levels and updates the damage multiplier. """
+
+        self.sword_master_bought, keep_buying = (False, True)
+        while (keep_buying and self.sword_master_level<self.sword_level_cap):
+
+            levels_to_buy = 10
+            level_cost =  (SVM.playerUpgradeCostBase 
+                * (SVM.playerUpgradeCostGrowth**(self.sword_master_level + levels_to_buy) 
+                    - SVM.playerUpgradeCostGrowth**self.sword_master_level) 
+                / (SVM.playerUpgradeCostGrowth - 1))
+
+            # Gold check.
+            keep_buying = self.current_gold>=level_cost
+
+            if keep_buying:
+                # Sword Master levels are free until they are worth buying.
+                self.sword_master_level += levels_to_buy
+                self.sword_master_bought = True
+
+        if self.sword_master_bought:
+            # Updates the improvement bonus multiplier.
+            sm_mult = sword_master.multipliers
+            sm_level = sword_master.levels
+            self.sword_master_multiplier = (self.base_tap_mult
+                * sm_mult[self.sword_master_level>=sm_level].max())
+
 
     def buy_heroes(self, heroes):
         """
@@ -235,7 +270,7 @@ class Player(object):
                 self.evolve2_stage[evolve2_level_check] = self.stage
 
             # Apply level gain.  (level_cost==0 implies levels_to_buy==0.)
-            gold_check = self.current_gold>level_cost
+            gold_check = self.current_gold>=level_cost
             self.hero_level[gold_check] += levels_to_buy[gold_check]
             
             # Check if hero levels were bought.
@@ -326,7 +361,7 @@ class Player(object):
 
     def calc_dps(self, heroes):
         # Update DPS only when heroes have been purchased or upgraded.
-        if self.heroes_bought:
+        if (self.heroes_bought or self.sword_master_bought):
 
             # Calculate hero_dps for all heroes.
             hero_formula_id = np.minimum(heroes.unlock_order, SVM.maxHelperFormula)
@@ -348,12 +383,20 @@ class Player(object):
             self.ship_damage = (self.clan_size*SVM.clanShipDmgMult
                 * (self.sword_master_level + self.total_hero_dps))
 
-            # tap_with_average_crit is not the same as average tap damage.
-            self.tap_damage = (self.sword_master_damage*self.tap_mult 
+            # Tap damage.
+            self.sword_master_damage = (self.sword_master_level
+                * self.sword_master_multiplier*SVM.playerDamageMult
+                * self.tap_mult*self.all_damage)
+            self.tap_damage = (self.sword_master_damage
                 + self.tap_damage_from_hero*self.total_hero_dps)
+            # tap_with_average_crit is not the same as average tap damage.
             self.tap_with_average_crit = (self.tap_damage
                 * (1 + self.crit_chance*self.crit_damage
-                    * (SVM.playerCritMinMult + SVM.playerCritMaxMult)/2)) 
+                    * (SVM.playerCritMinMult + SVM.playerCritMaxMult)/2))
+            self.average_tap_damage = (self.tap_damage
+                * (1 - self.crit_chance + self.crit_chance*self.crit_damage
+                    * (SVM.playerCritMinMult + SVM.playerCritMaxMult)/2))
+            self.tap_dps = self.average_tap_damage*self.taps_sec
 
             # Pet damage per attack and pet DPS.
             self.pet_damage_per_attack = max(self.tap_with_average_crit*self.pet_mult, 
@@ -361,13 +404,16 @@ class Player(object):
             self.pet_dps = self.pet_rate*self.pet_damage_per_attack
 
             # Total DPS: flash zip assumes two full zips are completed during the fight.
-            self.total_dps = (self.pet_dps + self.total_hero_dps 
+            self.total_dps = (self.pet_dps + self.total_hero_dps + self.tap_dps
                 + self.ship_damage*SVM.clanShipAttackRate)
             self.total_boss_dps = self.total_dps + self.flash_zip*self.pet_damage_per_attack
 
         # Store total DPS and pet attack damage per stage.
         self.total_dps_array[self.stage] = self.total_dps
+        self.hero_dps_array[self.stage] = self.total_hero_dps
         self.pet_attack_damage_array[self.stage] = self.pet_damage_per_attack
+        self.tap_dps_array[self.stage] = self.tap_dps
+        self.tap_damage_array[self.stage] = (self.tap_damage, self.sword_master_damage)
 
     def fight_titans(self, stage):
         """
@@ -427,7 +473,7 @@ class Player(object):
        
         dps = self.total_dps_array
 
-        # Stages clear durations.
+        # Stages clear durations (approximate).
         for i, s in enumerate([5, 15, 75]):
             stage_duration = (stage.number[(dps>0)*((s*dps)
                 < (stage.titan_hp*stage.titan_count))])
@@ -454,8 +500,7 @@ class Player(object):
             # Splash array of all max splash values.
             for i in range(20):
                 self.splash_array[damage_splashed>(i+1)*stage.titan_hp] = (i+1)
-                # Splash penalty is just for model testing
-                #self.splash_array_penalty[damage_splashed>(i+1)*(2**i)*stage.titan_hp] = (i+1)
+
 
     def print_results(self, stage, silent_output):
         if silent_output: return
@@ -577,13 +622,6 @@ class Player(object):
                 '\n\t\t\t\t\t', self.evolve2_stage[24:32], 
                 '\n\t\t\t\t\t', self.evolve2_stage[32:])
 
-    def measure_time(self):
-        """ This is for optimization purposes. """
-        if not self.time:
-            self.time = time()
-        else:
-            print('\nSimulation Runtime:', '%.3fs'%(time()-self.time))
-
 
 def run_simulation(input_csv, advanced_results=True, silent=False):
 
@@ -594,8 +632,8 @@ def run_simulation(input_csv, advanced_results=True, silent=False):
     player = Player(data, advanced_results)
 
     # Max-stage simulation:
-    player.measure_time()
     while player.end_simulation is False:
+        player.buy_sword_master(data.sword_master)
         player.buy_heroes(data.heroes)
         player.hero_improvement_bonuses(data)
         player.calc_dps(data.heroes)
@@ -604,12 +642,11 @@ def run_simulation(input_csv, advanced_results=True, silent=False):
 
     player.finalize_results(data)
     player.print_results(data.stage, silent)
-    player.measure_time()
-    return (player, data)
+    return (player, data.stage)
 
 if __name__ == '__main__':
-    player, data = run_simulation('PlayerInput.csv')
-
-    #plot_results(player, data.stage)
-    #plot_splash(player, data.stage)
-    #plot_splash_compare(player, player2, data.stage)
+    player, stage = run_simulation('PlayerInput.csv')
+    #plot_results(player, stage)
+    #plot_tap_damage(player, stage)
+    plot_dps(player, stage)
+    #plot_splash(player, stage)
