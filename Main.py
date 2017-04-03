@@ -90,7 +90,6 @@ class Player(object):
         self.pet_dps = 0
         self.total_dps = 0
         self.total_boss_dps = 0
-
         self.gold_spent = 0
 
         # Values stored for each stage.
@@ -453,13 +452,18 @@ class Player(object):
                     self.continuous_splash_stages[i] = stage.number[cont_splash].min()-1
 
             # Splash array of all max splash values.
+            # Splash penalty for results analysis, and is not in the game currently.
+            stage_group = 1 + np.floor(stage.number/1000)
+            splash_penalty = np.maximum(0, stage_group)
+            #splash_penalty **= splash_penalty
+            #print(splash_penalty)
             for i in range(20):
                 self.splash_array[damage_splashed>(i+1)*stage.titan_hp] = (i+1)
-                self.splash_array_penalty[damage_splashed>(i+1)*(2**i)*stage.titan_hp] = (i+1)
+                self.splash_array_penalty[damage_splashed>(i+1)*((splash_penalty)**i)*stage.titan_hp] = (i+1)
 
     def print_results(self, stage, silent_output):
-        if silent_output:
-            return
+        if silent_output: return
+
         print('\tGENERAL RESULTS:')
         print('\t\tFinal Stage:'.ljust(12), (str(self.stage)+',').rjust(5),
             ('Boss HP: '+letters(stage.boss_hp[self.stage], ',')).ljust(8),
@@ -608,7 +612,7 @@ def run_simulation(input_csv, advanced_results=True, silent=False):
     return (player, data)
 
 if __name__ == '__main__':
-    player, data = run_simulation('splash_2800_3500x.csv', silent=True)
+    player, data = run_simulation('splash_2000_2900.csv', silent=True)
     #player2, data = run_simulation('splashtest_kit0_er20.csv', silent=True)
     #plot_results(player, data.stage)
     plot_splash(player, data.stage)

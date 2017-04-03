@@ -41,9 +41,9 @@ def plot_splash(player, stage):
     title='Splash Comparison from Stages '+str(min(x))+' to '+str(max(x))
     ax.set_title(title, fontsize=10, loc=('center'))
     ax.plot(x, y1, 'o', markersize=3, markeredgewidth=0.75, color='b',
-        fillstyle='none', label='$y = 1, {\\rm\ (default)}$')
+        fillstyle='none', label='$y = 1}$')
     ax.plot(x, y2, 'x', markersize=3, markeredgewidth=0.5, color='r',
-        fillstyle='none', label='$y = 2$')
+        fillstyle='none', label='$y = 1+ {\\rm floor}\\left (\\frac{\\rm stage}{1000}\\right )$')
     legend = ax.legend(loc='lower left', frameon=False)
     plt.tight_layout()
     plt.show()
