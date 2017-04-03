@@ -4,7 +4,7 @@ from math import modf
 from time import time
 from copy import deepcopy
 from Classes import GameData, letters
-from Plotting import plot_results, plot_splash
+from Plotting import *
 from ServerVarsModel import SVM
 
 """
@@ -457,7 +457,9 @@ class Player(object):
                 self.splash_array[damage_splashed>(i+1)*stage.titan_hp] = (i+1)
                 self.splash_array_penalty[damage_splashed>(i+1)*(2**i)*stage.titan_hp] = (i+1)
 
-    def print_results(self, stage):
+    def print_results(self, stage, silent_output):
+        if silent_output:
+            return
         print('\tGENERAL RESULTS:')
         print('\t\tFinal Stage:'.ljust(12), (str(self.stage)+',').rjust(5),
             ('Boss HP: '+letters(stage.boss_hp[self.stage], ',')).ljust(8),
@@ -583,7 +585,7 @@ class Player(object):
             print('\nSimulation Runtime:', '%.3fs'%(time()-self.time))
 
 
-def run_simulation(input_csv, advanced_results=True):
+def run_simulation(input_csv, advanced_results=True, silent=False):
 
     # Store all input and game data into single object.
     data = GameData(input_csv)
@@ -601,11 +603,13 @@ def run_simulation(input_csv, advanced_results=True):
         player.fight_boss(data.stage)
 
     player.finalize_results(data)
-    player.print_results(data.stage)
+    player.print_results(data.stage, silent)
     player.measure_time()
     return (player, data)
 
 if __name__ == '__main__':
-    player, data = run_simulation('voodoo_PlayerInput.csv')
+    player, data = run_simulation('splash_2800_3500x.csv', silent=True)
+    #player2, data = run_simulation('splashtest_kit0_er20.csv', silent=True)
     #plot_results(player, data.stage)
-    #plot_splash(player, data.stage)
+    plot_splash(player, data.stage)
+    #plot_splash_compare(player, player2, data.stage)
