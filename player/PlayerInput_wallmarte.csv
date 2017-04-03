@@ -4,7 +4,7 @@
 5000,StageCap,(Max=5500)
 9000,HeroLevelCap,
         20,TapsPerSec,(Max=20)
-        50,ClanSize,
+        50,ClanSize, 
     ,,
     ACTIVE SKILL LEVELS, (LEVEL NAME ACTIVATED),
 15,HeavenlyStrike,
