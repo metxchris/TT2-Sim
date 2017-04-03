@@ -13,16 +13,18 @@ By entering your current configuration into the PlayerInput.csv file, you can us
 In order to use TT2-Sim, you will need to download the repository to a local directory, where a local installation of Python v2/v3 is required to run the code (I haven't tested this in Python v3 yet but it should be compatible).  The easiest way to set this up with all necessary dependencies is to install the [Anaconda](https://www.continuum.io/downloads) distribution, but the installation footprint will be fairly large for what's needed to run this sim.  I also recommend running the code through [Sublime Text](https://www.sublimetext.com/); this will allow you to easily run the simulation directly through the text editor (press ctrl+b), instead of having to run everything through the command line.  Initiate the simulation by running the Main.py file.  The Classes.py file is a dependency needed to initialize game data, but can also be run directly to print out a full list of all input variables used in the sim.
 
 # How It Works
-The simulation was designed as a simplified version of the TT2 game engine.  Whilel several simplifications are made, the result is an extremely accurate picture of your game performance.  The code itself is well-commented so read through the Main.py file for more details.
+The simulation was designed as a a basic version of the TT2 game engine.  While several simplifications are made, the result is an extremely accurate picture of your game performance.  The code itself is well-commented, so read through the Main.py file for more details on the processes used.
 
 # Sample Plots
-<img src="./images/splash_1000_2710.png" alt="Splash Comparison" style="width: 350px;"/><img src="./images/dps_tap20.png" alt="Splash Comparison" style="width: 350px;"/>
+<div style="width:1000px;">
+<img src="./images/splash_1000_2710.png" alt="Splash Comparison" style=" float:left; display:inline;width: 300px;"/><img src="./images/dps_tap20.png" alt="Splash Comparison" style=" float:left; display:inline;width: 300px;"/>
+</div>
 
 There is great potential for model analysis using TT2-Sim. A full overview of various of results obtained and studies performed using the sim will be posted on the repository's [Wiki](https://metxchris.github.io/TT2-Sim/).
 
 # Sample Text Output
 
-```sh
+```python
     GENERAL RESULTS:
         Final Stage: 3350, Boss HP: 50.07cg, Damage: 48.23cg
         Hero Levels: [4000 4000 4000 4000 4000 4000 4000 4000] 
@@ -77,4 +79,4 @@ There is great potential for model analysis using TT2-Sim. A full overview of va
 ```
 
 # Special Thanks
-Special thanks to Marxz13 for collaborating with me on various gameplay aspects and helping me test for accuracy issues.  Also thanks to Colblitz for getting me access to several of the gameplay formulas I was missing.  Additionally, Byungshin was very helpful in helping me nail down a errors bugs in the gold calculations.
+Special thanks to Marxz13 for collaborating with me on various gameplay aspects and helping me test for accuracy issues.  Also thanks to [Colblitz](https://github.com/colblitz) for getting me access to several of the gameplay formulas I was missing.  Additionally, Byungshin was very helpful in helping me nail down a errors bugs in the gold calculations.
