@@ -16,7 +16,7 @@ In order to use TT2-Sim, you will need to download the repository to a local dir
 The simulation was designed as a a basic version of the TT2 game engine.  While several simplifications are made, the result is an extremely accurate picture of your game performance.  The code itself is well-commented, so read through the Main.py file for more details on the processes used.
 
 # Sample Plots
-<div style="width:1000px;margin:auto">
+<div style="width:750px;margin-left:150px">
 <img src="./images/splash_1000_2710.png" alt="Splash Comparison" width="350" style="float:left; display:inline;"/><img src="./images/dps_tap20.png" alt="Splash Comparison" width="350" style="float:left; display:inline;"/>
 </div>
 
