@@ -4,6 +4,11 @@ from copy import deepcopy
 from math import modf
 from ServerVarsModel import SVM
 
+"""
+Notes on Python v2.7 compatibility:
+This code might still work in v2.7 if all instances of "dtype=str"
+is replaced with "dtype=np.string_", without the quotes.
+"""
   
 class GameData(object):
     def __init__(self, input_file):
