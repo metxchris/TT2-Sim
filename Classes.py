@@ -7,7 +7,7 @@ from ServerVarsModel import SVM
 """
 Notes on Python v2.7 compatibility:
 This code might still work in v2.7 if all instances of "dtype=str"
-is replaced with "dtype=np.string_", without the quotes.
+are replaced with "dtype=np.string_", without the quotes.
 """
   
 class GameData(object):
