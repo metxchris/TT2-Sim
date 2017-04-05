@@ -1,17 +1,55 @@
 from __future__ import division, print_function
 import numpy as np
 from math import modf
-from time import time
 from copy import deepcopy
 from Classes import GameData, letters
 from Plotting import *
 from ServerVarsModel import SVM
 
 """
+TT2-Sim by MetxChris.
+Designed to run in Python 3.6+
+
+1. Active Skills in Use:
+    All active skills are put to use here.
+
+2. Artifacts in Use:
+    Most if not all artifacts other than the skill duration/skill cost
+    artifacts should be referenced here.
+
+3. Skill Tree Skills in Use:
+    a. Yellow Tree: Flash Zip, Boss Timer.
+    The remaining skills here are questionable at best and/or their
+    effects aren't very well known. In particular, PET:HOM gives
+    x5 the base monster gold amount at level 1 per proc, which is
+    1/4 the amount of starting gold you get after prestige (for a
+    given stage), so this is worthless.  The lightning burst skill
+    also does basically nothing so that too is omitted.
+
+    b. Green Tree: Pet Evo, Type Damages, IP, TF, ER.
+    This is most of the green skills.  The remaining ones could be
+    included for offline calculations at some point.
+
+    c. Blue Tree: Heavenly Strike, Fire Sword, Heroic Might.
+    The mana related skills could be included at some point for
+    mana simulations.  The HoM skill deals damage equal to
+    200*tap_with_average_crit once per skill activation, which
+    is generally less than a single shadow clone strike, so this is
+    intentionally omitted.  The Critical Strike lightning skill could be 
+    included if I were to derive a good model to approximate how much 
+    damage it does on average per titan or boss. 
+
+4. Equipmen/Pet Bonuses in Use:
+    All Equipment bonuses are used and All pet bonuses should be in play
+    other than for Fluffers.
+
+
 TODO:
 1. Add Equipment CSV, test if works (it doesn't).
 2. Sci notation option (you heathens).
 3. Create new class to organize bonuses.
+4. Finish relic efficiency and add slider plot.
+5. Finish adding blue skill-tree skills.
 """
 
 class Player(object):
@@ -32,33 +70,37 @@ class Player(object):
         # Pull general input values from PlayerInput.CSV.
         start_idx = np.array([input_csv[:,0]=='GENERAL INPUT VALUES']).argmax()+1
         end_idx = np.array([input_csv[start_idx:,0]=='']).argmax()+1
-        input_values = input_csv[start_idx:end_idx,0].astype(np.int)
+        input_values = input_csv[start_idx:end_idx,0].astype(np.float)
         input_type = input_csv[start_idx:end_idx,1]
         
         # Advanced results will print more details but increases run time.
         self.advanced_results = advanced_results
-        if self.advanced_results:
-            self.evolve1_stage = np.zeros_like(heroes.level)
-            self.evolve2_stage = np.zeros_like(heroes.level)
-            self.max_splash_stages = np.zeros(4, dtype=np.int)
-            self.continuous_splash_stages = np.zeros_like(self.max_splash_stages)
-            self.splash_array = np.zeros_like(stage.number, dtype=np.int)
-            self.splash_array_penalty = np.zeros_like(self.splash_array)
+        self.evolve1_stage = np.zeros_like(heroes.level)
+        self.evolve2_stage = np.zeros_like(heroes.level)
+        self.max_splash_stages = np.zeros(4, dtype=np.int)
+        self.continuous_splash_stages = np.zeros_like(self.max_splash_stages)
+        self.splash_array = np.zeros_like(stage.number, dtype=np.int)
+        self.splash_array_penalty = np.zeros_like(self.splash_array)
+        self.run_times = np.zeros(3, dtype=np.float)
+        self.num_strikes = 0
 
         # Store player input values.
-        self.clan_level = max(input_values[input_type=='ClanLevel'][0], 1)
-        self.start_stage = max(input_values[input_type=='StartStage'][0], 1)
-        self.stage_cap = input_values[input_type=='StageCap'][0]
-        self.hero_cap = input_values[input_type=='HeroLevelCap'][0]
+        self.clan_level = max(input_values[input_type=='ClanLevel'][0], 1).astype(np.int)
+        self.stage_cap = input_values[input_type=='StageCap'][0].astype(np.int)
+        self.start_stage = min(max(input_values[input_type=='StartStage'][0], 1), 
+            self.stage_cap).astype(np.int)
+        self.hero_cap = input_values[input_type=='HeroLevelCap'][0].astype(np.int)
         self.taps_sec = min(input_values[input_type=='TapsPerSec'][0], 20)
-        self.clan_size = min(input_values[input_type=='ClanSize'][0], 50)
+        self.clan_size = min(input_values[input_type=='ClanSize'][0], 50).astype(np.int)
+        self.transition_delay = max(input_values[input_type=='TransitionScreenDelay'][0], 0.3)
+        self.no_heroes = input_values[input_type=='NoHeroes'][0]
 
         # Initialize Default Values.
         self.hero_level = heroes.level
         self.hero_dps = np.zeros_like(self.hero_level, dtype=np.float)
         self.default_levels_to_buy = 10*np.ones_like(heroes.level).astype(np.int)
         self.hero_multiplier = np.zeros_like(heroes.level, dtype=np.float)
-        self.stage_duration_stages = np.zeros(3, dtype=np.int)
+        self.stage_duration_stages = np.zeros(4, dtype=np.int)
         self.heroes_bought = False
         self.end_simulation = False
         self.time = 0
@@ -68,24 +110,11 @@ class Player(object):
         self.sword_master_bought = False
         self.sword_master_damage =0
         self.sword_master_level = 0
-        self.sword_master_multiplier = 0
+        self.sword_master_multiplier = 1
         self.pet_damage_per_attack = 0
         self.tap_damage_from_hero = 0
         self.tap_with_average_crit = 0
         self.average_tap_damage = 0
-        self.crit_damage = 0
-        self.crit_chance = 0
-        self.boss_gold = 0
-        self.chest_gold = 0
-        self.chest_chance = 0
-        self.titan_gold = 0
-        self.all_gold = 0
-        self.all_damage = 0
-        self.all_hero_damage = 0
-        self.melee_mult = 0
-        self.spell_mult = 0
-        self.ranged_mult = 0
-        self.tap_mult = 0
         self.tap_damage = 0
         self.ship_damage = 0
         self.melee_dps = 0
@@ -97,9 +126,13 @@ class Player(object):
         self.total_boss_dps = 0
         self.shadow_clone_dps = 0
         self.gold_spent = 0
+        self.num_transitions = 0
 
         # Values stored for each stage.
+        self.num_pet_attacks = np.zeros_like(stage.number, dtype=np.float)
+        self.relic_efficiency = np.zeros((stage.number.size, 2), dtype=np.float)
         self.pet_attack_damage_array = np.zeros_like(stage.number, dtype=np.float)
+        self.tap_with_avg_crit_array = np.zeros_like(stage.number, dtype=np.float)
         self.tap_damage_array = np.zeros((stage.number.size, 2), dtype=np.float)
         self.total_dps_array = np.zeros_like(stage.number, dtype=np.float)
         self.hero_dps_array = np.zeros_like(stage.number, dtype=np.float)
@@ -111,15 +144,31 @@ class Player(object):
             * SVM.clanBonusBaseNerf**max(self.clan_level - SVM.clanQuestStageNerf, 0))
 
         # Initialize active skill bonuses (crit strike activated later).
+        # Heavenly Strike active skill is set to max because it isn't used in any
+        # DPS calculations.
+        self.heavenly_strike = max(1, max(15, active_skills.heavenly_strike)
+            *artifacts.effect[artifacts.name=='Titan\'s Mask'][0])
         self.hom = (active_skills.hom
             * artifacts.effect[artifacts.name=='Laborer\'s Pendant'][0])
         self.war_cry = max(1, active_skills.war_cry
             * artifacts.effect[artifacts.name=='Parchment of Foresight'][0])
+        self.shadow_clone = (active_skills.shadow_clone
+            * artifacts.effect[artifacts.name=='Elixir of Eden'][0])
         self.fire_sword = max(1, active_skills.fire_sword
             * artifacts.effect[artifacts.name=='Bringer of Ragnarok'][0])
-        self.shadow_clone = max(1, active_skills.shadow_clone
-            * artifacts.effect[artifacts.name=='Elixir of Eden'][0])
 
+        # War Cry Skill Tree Boost (This boosts avg DPS but not displayed DPS)
+        war_cry_tree = max(1, 
+            skill_tree.effect[skill_tree.attributes=='HelperDmgSkillBoost'][0])
+        self.war_cry_talent = 0.9 + 0.1*war_cry_tree
+
+        if self.heavenly_strike>1:
+            self.heavenly_strike += (artifacts.effect[artifacts.name=='Titan\'s Mask'][0]
+                * skill_tree.effect[skill_tree.attributes=='BurstSkillBoost'][0])
+        if self.fire_sword>1:
+            self.fire_sword += (artifacts.effect[artifacts.name=='Bringer of Ragnarok'][0]
+                * skill_tree.effect[skill_tree.attributes=='FireTapSkillBoost'][0])
+        
         # Pet damage multiplier.
         self.pet_mult = (pets.damage_mult
             * artifacts.effect[artifacts.name=='Furies Bow'][0]
@@ -181,6 +230,8 @@ class Player(object):
             + equipment.chest_chance/100)
         self.base_x10_gold_chance = (SVM.goldx10Chance
          + artifacts.effect[artifacts.name=='Divine Chalice'][0])
+        self.tf_chance = 0.01 + skill_tree.effect[skill_tree.attributes=='MultiMonsters'][0]
+        self.tf_bonus = 1 + 2.5*self.tf_chance
 
         # Misc bonuses.
         self.mana_regen = pet_bv[pet_bt=='ManaRegen'][0] #not used yet
@@ -193,6 +244,22 @@ class Player(object):
         self.stage = self.start_stage
         self.current_gold = (20*stage.base_titan_gold[self.stage-1]
             *self.base_titan_gold*self.base_all_gold)
+
+        # Final initializations using base values.
+        self.crit_damage = 1
+        self.crit_chance = min(SVM.maxCritChance, self.base_crit_chance)
+        self.boss_gold = self.base_boss_gold
+        self.all_gold = self.base_all_gold
+        self.all_damage = self.base_all_damage
+        self.all_hero_damage = self.base_all_hero_damage
+        self.melee_mult = self.base_melee_mult
+        self.spell_mult = self.base_spell_mult
+        self.ranged_mult = self.base_ranged_mult
+        self.chest_chance = self.base_chest_chance
+        self.chest_gold = self.base_chest_gold
+        self.titan_gold = self.base_titan_gold
+        self.x10_gold_chance = self.base_x10_gold_chance
+        self.tap_mult = self.base_tap_mult
 
     def buy_sword_master(self, sword_master):
         """ Buys Sword Master levels and updates the damage multiplier. """
@@ -233,11 +300,14 @@ class Player(object):
         to level costs of the primary damage hero.
         """
 
-        # Abbreviate self.hero_level to use below.
-        level = self.hero_level
-
         # Reset hero level purchase tracking.
         self.heroes_bought = False
+
+        # For Tap only mode (set in player input).
+        if self.no_heroes: return
+
+        # Abbreviate self.hero_level to use below.
+        level = self.hero_level
 
         # Attempt to unlock heroes until all heroes are purchased.
         if (level.min()==0):
@@ -347,22 +417,34 @@ class Player(object):
             chg_match = (bt_tile[condition]=='ChestAmount')
 
             # Apply bonuses.
-            self.crit_damage = bm_tile[condition][cd_match].prod()
-            self.crit_chance = min(SVM.maxCritChance,
-                self.base_crit_chance+bm_tile[condition][cc_match].sum())
-            self.boss_gold = self.base_boss_gold*bm_tile[condition][bg_match].prod()
-            self.all_gold = self.base_all_gold*bm_tile[condition][ag_match].prod()
-            self.all_damage = self.base_all_damage*bm_tile[condition][ad_match].prod()
-            self.all_hero_damage = self.base_all_hero_damage*bm_tile[condition][ah_match].prod()
-            self.melee_mult = self.base_melee_mult*bm_tile[condition][md_match].prod()
-            self.spell_mult = self.base_spell_mult*bm_tile[condition][sd_match].prod()
-            self.ranged_mult = self.base_ranged_mult*bm_tile[condition][rd_match].prod()
-            self.chest_chance = self.base_chest_chance+bm_tile[condition][chc_match].sum()
-            self.chest_gold = self.base_chest_gold*bm_tile[condition][chg_match].prod()
-            self.titan_gold = self.base_titan_gold*bm_tile[condition][tg_match].prod()
-            self.x10_gold_chance = self.base_x10_gold_chance+bm_tile[condition][tx_match].sum()
-            self.tap_mult = self.base_tap_mult*bm_tile[condition][td_match].sum()
             self.tap_damage_from_hero = bm_tile[condition][th_match].sum()
+            self.crit_damage = bm_tile[condition][cd_match].prod()
+            self.crit_chance = min(SVM.maxCritChance, self.base_crit_chance
+                + bm_tile[condition][cc_match].sum())
+            self.boss_gold = (self.base_boss_gold
+                * bm_tile[condition][bg_match].prod())
+            self.all_gold = (self.base_all_gold
+                * bm_tile[condition][ag_match].prod())
+            self.all_damage = (self.base_all_damage
+                * bm_tile[condition][ad_match].prod())
+            self.all_hero_damage = (self.base_all_hero_damage
+                * bm_tile[condition][ah_match].prod())
+            self.melee_mult = (self.base_melee_mult
+                * bm_tile[condition][md_match].prod())
+            self.spell_mult = (self.base_spell_mult
+                * bm_tile[condition][sd_match].prod())
+            self.ranged_mult = (self.base_ranged_mult
+                * bm_tile[condition][rd_match].prod())
+            self.chest_chance = (self.base_chest_chance
+                + bm_tile[condition][chc_match].sum())
+            self.chest_gold = (self.base_chest_gold
+                * bm_tile[condition][chg_match].prod())
+            self.titan_gold = (self.base_titan_gold
+                * bm_tile[condition][tg_match].prod())
+            self.x10_gold_chance = (self.base_x10_gold_chance
+                + bm_tile[condition][tx_match].sum())
+            self.tap_mult = (self.base_tap_mult
+                * bm_tile[condition][td_match].sum())
 
     def calc_dps(self, heroes):
         # Update DPS only when heroes have been purchased or upgraded.
@@ -375,7 +457,7 @@ class Player(object):
                 **hero_formula_id)
             self.hero_dps = (heroes.purchase_cost*SVM.dMGScaleDown*hero_efficiency
                 * self.hero_level*self.hero_multiplier*self.all_damage
-                * self.all_hero_damage*(1 + heroes.weapon_levels/2))
+                * self.all_hero_damage*heroes.weapon_bonus)
 
             # Apply damage type bonus and sum for total hero dps.
             self.hero_dps[heroes.melee_type] *= self.melee_mult
@@ -404,32 +486,36 @@ class Player(object):
             self.tap_dps = self.average_tap_damage*self.taps_sec
 
             # Pet damage per attack and pet DPS.
-            self.pet_damage_per_attack = max(self.tap_with_average_crit*self.pet_mult, 
-                self.total_hero_dps)
+            self.pet_damage_per_attack = max(self.tap_with_average_crit
+                * self.pet_mult, self.total_hero_dps)
             self.pet_dps = self.pet_rate*self.pet_damage_per_attack
 
-            # Fire Sword applied after pet damage calc.
-            self.tap_damage *= self.fire_sword
             self.shadow_clone_dps = self.tap_with_average_crit*self.shadow_clone
 
-            # Total DPS: flash zip assumes two full zips are completed during the fight.
-            self.total_dps = (self.pet_dps + self.total_hero_dps + self.tap_dps
-                + self.ship_damage*SVM.clanShipAttackRate + self.shadow_clone_dps)
-            self.total_boss_dps = self.total_dps + self.flash_zip*self.pet_damage_per_attack
+            # war_cry_talent needs to go here specifically.  It boosts avg hero damage only.
+            self.total_dps = (self.pet_dps + self.total_hero_dps*self.war_cry_talent
+                + self.tap_dps + self.ship_damage/SVM.clanShipAttackRate 
+                + self.shadow_clone_dps)
+            # Total Boss DPS: flash zip assumes two full zips are completed.
+            # Flash zip requires taps_sec>0.
+            self.total_boss_dps = (self.total_dps 
+                + self.flash_zip*self.pet_damage_per_attack*(self.taps_sec>0))
 
         # Store total DPS and pet attack damage per stage.
         self.total_dps_array[self.stage] = self.total_dps
         self.hero_dps_array[self.stage] = self.total_hero_dps
         self.pet_attack_damage_array[self.stage] = self.pet_damage_per_attack
         self.tap_dps_array[self.stage] = self.tap_dps
-        self.tap_damage_array[self.stage] = (self.tap_damage, self.sword_master_damage)
+        self.tap_with_avg_crit_array[self.stage] = self.tap_with_average_crit
+        self.tap_damage_array[self.stage] = (self.tap_damage*self.fire_sword, 
+            self.sword_master_damage)
 
     def fight_titans(self, stage):
         """
         The fight_titans method computes titan/chesterson gold from the current
         stage and stores the values.  Note that 10x gold does not couple with
         HoM pot gold.  Additional HoM coins are not computed here since they are
-        negligable compared to the pot bonus.  Overkills due to splash/Tf are
+        negligable compared to the pot bonus.  Overkills due to splash are
         similarly not calculated since the gold gained per overkill multiplied
         with the average overkill chance is negligible compared to boss gold.
         """
@@ -438,13 +524,15 @@ class Player(object):
         self.gold_array[self.stage, 1] = (stage.base_titan_gold[self.stage]
             * (stage.titan_count[self.stage])
             * (1-self.chest_chance)*self.titan_gold*self.all_gold
-            * (1 + 9*self.x10_gold_chance + SVM.midasMultiplierNormal*self.hom))
+            * (1 + 9*self.x10_gold_chance + self.tf_bonus 
+                + SVM.midasMultiplierNormal*self.hom))
 
         # Average Chesterson gold per stage:
         self.gold_array[self.stage, 2] = (stage.base_titan_gold[self.stage]
-            * (stage.titan_count[self.stage])
+            * (stage.titan_count[self.stage])*self.tf_bonus
             * self.chest_chance*self.chest_gold*self.all_gold*SVM.treasureGold
-            * (1 + 9*self.x10_gold_chance + SVM.midasMultiplierChesterson*self.hom))
+            * (1 + 9*self.x10_gold_chance + self.tf_bonus 
+                + SVM.midasMultiplierChesterson*self.hom))
 
         # Add values to current_gold.
         self.current_gold += self.gold_array[self.stage, 1:].sum()
@@ -483,13 +571,53 @@ class Player(object):
         dps = self.total_dps_array
 
         # Stages clear durations (approximate).
-        for i, s in enumerate([5, 15, 75]):
+        for i, s in enumerate([1, 5, 15, 75]):
             stage_duration = (stage.number[(dps>0)*((s*dps)
                 < (stage.titan_hp*stage.titan_count))])
 
             if stage_duration.any():
                 self.stage_duration_stages[i] = stage_duration.min()
 
+        # Count Pet Attacks (Not finished yet).
+        idx = (self.tap_with_avg_crit_array>0)*(stage.number<self.stage)
+        pet_damage = self.pet_attack_damage_array[idx]
+        damage_splashed = np.maximum(0, pet_damage-stage.titan_hp[idx])
+        splash_factor = np.floor(np.minimum(3, damage_splashed/stage.titan_hp[idx])+1)
+        remaining_titans = np.ceil(stage.titan_count[idx]/splash_factor)
+        # Boss attack counting is trickier since we need to account for Flash Zip.
+        boss_req_attacks = np.ceil(stage.boss_hp[idx]/pet_damage)
+        num_pet_attacks_no_zip = remaining_titans.sum() + boss_req_attacks.sum()
+        # We assume the Flash Zip damage is applied after 10 seconds.
+        boss_attacks = np.zeros_like(boss_req_attacks)
+        condition = boss_req_attacks<=(10*self.pet_rate)
+        boss_attacks[condition] = boss_req_attacks[condition]
+        boss_req_attacks[condition] = 0
+        # Count attacks that weren't counted in the previous step.
+        boss_attacks += (boss_req_attacks>(10*self.pet_rate))*10*self.pet_rate
+        # Subtract the Flash Zip bonus (each flash_zip level equals 150 pet attacks per sequence.)
+        boss_req_attacks = np.maximum(0, boss_req_attacks - 150*self.flash_zip)
+        # Sum the remaining attacks (I haven't put the second zip sequence in yet).
+        boss_attacks +=  boss_req_attacks
+        self.num_pet_attacks = boss_attacks + remaining_titans
+
+        # Minimum possible active time to finish a simulated run (Not finished yet).
+        num_bosses = idx.sum()
+        self.num_transitions = (np.mod(stage.number[idx], 5)==1).sum()
+        self.run_times[0] = 0.3*(2*num_bosses)+0.3*self.num_transitions
+        # Using transition screens and reduced Titan counts after splash (No TF yet).
+        minimum_titan_count = np.ceil(stage.titan_count/4).sum()
+        self.run_times[1] = self.num_transitions*self.transition_delay
+        # Using reduced titan count based on pet attacks at max kill rate and no zip.
+        self.run_times[2] = 0.7*(num_bosses+stage.titan_count[idx].sum()/(self.tf_bonus))
+
+        # Prestige Relic Efficiency (Not finished yet).
+        base_relics = stage.relics[self.start_stage]
+        total_attacks = 0
+        for i, attacks in enumerate(self.num_pet_attacks):
+            j = i + self.start_stage + 1
+            total_attacks += self.pet_rate*attacks+self.transition_delay*((j%5)==1)
+            self.relic_efficiency[j, 0] = (stage.relics[j]-base_relics)/total_attacks
+            self.relic_efficiency[j, 1] = stage.relics[j]/total_attacks
 
         if self.advanced_results:
             # Store splash results.
@@ -510,6 +638,17 @@ class Player(object):
             for i in range(20):
                 self.splash_array[damage_splashed>(i+1)*stage.titan_hp] = (i+1)
 
+            # Really Important Heavenly Strike calc.
+            if self.heavenly_strike>1:
+                # We need to account for splash kills due to HS and adjust the titan count.
+                idx = (self.tap_with_avg_crit_array>0)*(stage.number<self.stage)
+                strike_damage = self.heavenly_strike*self.tap_with_avg_crit_array[idx]
+                damage_splashed = np.maximum(0, strike_damage-stage.titan_hp[idx])
+                splash_factor = np.floor(np.minimum(3, damage_splashed/stage.titan_hp[idx]))+1
+                remaining_titans = np.ceil(stage.titan_count[idx]/splash_factor).sum()
+                num_bosses = np.ceil(stage.boss_hp[idx]/strike_damage).sum()
+                # This should roughly give the number of required strikes.
+                self.num_strikes = (remaining_titans + num_bosses)
 
     def print_results(self, stage, silent_output):
         if silent_output: return
@@ -553,7 +692,7 @@ class Player(object):
             '\t\tPet Bonus:'.ljust(c3), 
             letters(self.pet_mult-1, '%').rjust(c4))
         print('\t\tTap DMG:'.ljust(c1), 
-            letters(self.tap_damage).rjust(c2), 
+            letters(self.tap_damage*self.fire_sword).rjust(c2), 
             '\t\tTap Bonus:'.ljust(c3), 
             letters(self.tap_mult-1, '%').rjust(c4))
         print('\t\tShip DMG:'.ljust(c1), 
@@ -569,7 +708,7 @@ class Player(object):
             '\t\tCrit Chance:'.ljust(c3), 
             letters(self.crit_chance, '%').rjust(c4))
         
-        c1, c2, c3, c4 = (15, 9, 11, 7)
+        c1, c2, c3, c4 = (15, 9, 12, 8)
         print('\n\tGOLD RESULTS:')
         print('\t\tTotal Earned:'.ljust(c1), 
             letters(self.gold_array.sum()).rjust(c2),
@@ -587,19 +726,33 @@ class Player(object):
             letters(self.gold_array[:,1].sum()).rjust(c2),
             '\tMultiplier:'.ljust(c3), 
             letters(self.titan_gold).rjust(c4))
+        print('\t\t10x Chance:'.ljust(c1), 
+            letters(self.x10_gold_chance, '%').rjust(c2),
+            '\tMultiplier:'.ljust(c3), 
+            letters(1 + 9*self.x10_gold_chance).rjust(c4),
+            ' *')
+        print('\t\tTF Chance:'.ljust(c1), 
+            letters(self.tf_chance, '%').rjust(c2),
+            '\tMultiplier:'.ljust(c3), 
+            letters(self.tf_bonus).rjust(c4),
+            ' **')
         print('\t\tRemaining:'.ljust(c1), 
-            letters(self.current_gold).rjust(c2)) 
-        print('\t\tSpent:'.ljust(c1), 
-            letters(self.gold_spent).rjust(c2))
+            letters(self.current_gold).rjust(c2), 
+            '\tSpent:    '.ljust(c3), 
+            letters(self.gold_spent).rjust(c4))
+        print('\n\t\t*  No bonus with HoM.')
+        print('\t\t** No bonus with HoM or Bosses.')
 
         c1, c2, c3, c4 = (18, 3, 6, 4)
         print('\n\tSTAGE COMPLETION TIMES (TITANS ONLY):')
-        print('\t\t 5 Seconds Per Stage:'.ljust(c1),
+        print('\t\t 1 Second  Per Stage:'.ljust(c1),
             'Stage =', str(self.stage_duration_stages[0]).rjust(c4))
-        print('\t\t15 Seconds Per Stage:'.ljust(c1),
+        print('\t\t 5 Seconds Per Stage:'.ljust(c1),
             'Stage =', str(self.stage_duration_stages[1]).rjust(c4))
-        print('\t\t75 Seconds Per Stage:'.ljust(c1),
+        print('\t\t15 Seconds Per Stage:'.ljust(c1),
             'Stage =', str(self.stage_duration_stages[2]).rjust(c4))
+        print('\t\t75 Seconds Per Stage:'.ljust(c1),
+            'Stage =', str(self.stage_duration_stages[3]).rjust(c4))
 
         if self.advanced_results:
 
@@ -631,6 +784,27 @@ class Player(object):
                 '\n\t\t\t\t\t', self.evolve2_stage[24:32], 
                 '\n\t\t\t\t\t', self.evolve2_stage[32:])
 
+            c1, c2, c3, c4 = (21, 7, 4, 6)
+            print('\n\tATTACKS AND TIMES TO REACH STAGE:', self.stage)
+            print('\t\tHeavenly Strikes:'.ljust(c1), 
+                letters(self.num_strikes).rjust(c2),
+                '\t\tTime Required:', 
+                str('%.2f'%(self.num_strikes*5/86400)).rjust(c4),'days')
+            if self.pet_rate>0:
+                pet_duration = (self.num_pet_attacks.sum()/self.pet_rate/60)
+                print('\t\tPet Attacks:'.ljust(c1), 
+                    letters(self.num_pet_attacks.sum()).rjust(c2),
+                    '\t\tTime Required:', 
+                    str('%.2f'%pet_duration).rjust(c4),'mins')
+            print('\t\tMinimum Possible:'.ljust(c1), 
+                letters(self.run_times[0]).rjust(c2),
+                '\t\tTime Required:', 
+                str('%.2f'%(self.run_times[0]/60)).rjust(c4),'mins')
+            print('\t\tTransition Screens:'.ljust(c1), 
+                letters(self.run_times[0]).rjust(c2),
+                '\t\tTime Wasted:  ', 
+                str('%.2f'%(self.run_times[1]/60)).rjust(c4),'mins')
+      
 
 def run_simulation(input_csv, advanced_results=True, silent=False):
 
@@ -654,8 +828,9 @@ def run_simulation(input_csv, advanced_results=True, silent=False):
     return (player, data.stage)
 
 if __name__ == '__main__':
-    player, stage = run_simulation('PlayerInput.csv')
+    player, stage = run_simulation('playerinput.csv')
     #plot_results(player, stage)
     #plot_tap_damage(player, stage)
     #plot_dps(player, stage)
     #plot_splash(player, stage)
+    #plot_relics(player, stage)

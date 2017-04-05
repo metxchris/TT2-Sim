@@ -7,7 +7,7 @@ from ServerVarsModel import SVM
   
 class GameData(object):
     def __init__(self, input_file):
-        self.input = np.genfromtxt('player\\'+input_file, delimiter=',', dtype=np.string_)
+        self.input = np.genfromtxt('player\\'+input_file, delimiter=',', dtype=str)
         self.active_skills = ActiveSkills(self.input)
         self.artifacts = Artifacts(self.input)
         self.equipment = Equipment(self.input)
@@ -17,7 +17,7 @@ class GameData(object):
         self.pets = Pets(self.input)
         self.skill_tree = SkillTree(self.input)
         self.sword_master = SwordMaster()
-        self.stage = Stage(self.input, self.skill_tree, self.equipment.titan_hp)
+        self.stage = Stage(self.input, self.skill_tree, self.equipment.titan_hp, self.artifacts)
 
     def print_info(self, stage_skip_factor=100):
         self.artifacts.print_info()
@@ -30,8 +30,7 @@ class GameData(object):
 
 class ActiveSkills(object):
     def __init__(self, input_csv):
-        csv_data = np.genfromtxt('csv\ActiveSkills.csv',
-            delimiter=',', dtype=np.string_)
+        csv_data = np.genfromtxt('csv\ActiveSkills.csv', delimiter=',', dtype=str)
 
         # Find active skill info in player input CSV.
         start_idx = np.array([input_csv[:,0]=='ACTIVE SKILL LEVELS']).argmax()+1
@@ -40,13 +39,15 @@ class ActiveSkills(object):
         types = input_csv[start_idx:end_idx, 1]
         active = (input_csv[start_idx:end_idx, 2]!='')
 
-        z = np.array([0])
-        cs_skill = max(z, skill_levels[(types=='CriticalStrike')*active])[0]+1
-        hom_skill = max(z, skill_levels[(types=='HandOfMidas')*active])[0]+1
-        fs_skill = max(z, skill_levels[(types=='FireSword')*active])[0]+1
-        wc_skill = max(z, skill_levels[(types=='WarCry')*active])[0]+1
-        sc_skill = max(z, skill_levels[(types=='ShadowClone')*active])[0]+1
+        a = np.array([0])
+        hs_skill = max(a, skill_levels[(types=='HeavenlyStrike')*active])[0]+1
+        cs_skill = max(a, skill_levels[(types=='CriticalStrike')*active])[0]+1
+        hom_skill = max(a, skill_levels[(types=='HandOfMidas')*active])[0]+1
+        fs_skill = max(a, skill_levels[(types=='FireSword')*active])[0]+1
+        wc_skill = max(a, skill_levels[(types=='WarCry')*active])[0]+1
+        sc_skill = max(a, skill_levels[(types=='ShadowClone')*active])[0]+1
 
+        self.heavenly_strike = csv_data[hs_skill, 1].astype(np.float)
         self.crit_strike = csv_data[cs_skill, 2].astype(np.float)
         self.hom = csv_data[hom_skill, 3].astype(np.float)
         self.fire_sword = csv_data[fs_skill, 4].astype(np.float)
@@ -57,7 +58,7 @@ class ActiveSkills(object):
 class Artifacts(object):
     def __init__(self, input_csv):
         artifacts = np.genfromtxt('csv\ArtifactInfo.csv', 
-            delimiter=',', dtype=np.string_)
+            delimiter=',', dtype=str)
 
         # Find artifact info in player input CSV.
         start_idx = np.array([input_csv[:,0]=='ARTIFACT LEVELS']).argmax()+1
@@ -82,7 +83,8 @@ class Artifacts(object):
             'Blade of Damocles', 'Parchment of Foresight', 'Heroic Shield',
             'Stone of the Valrunes', 'Elixir of Eden', 'Bringer of Ragnarok',
             'Titan\'s Mask', 'Chest of Contentment', 'Hero\'s Blade',
-            'Helmet of Madness', 'Lethe Water', 'Amethyst Staff'])
+            'Helmet of Madness', 'Lethe Water', 'Amethyst Staff',
+            'Book of Shadows'])
         for name in artifact_names:
             self.effect[self.name==name] += 1
 
@@ -151,7 +153,7 @@ class Heroes(object):
     def __init__(self, input_csv):
         # Read CSV Files.
         helper_info = np.genfromtxt('csv\HelperInfo.csv', 
-            delimiter=',', dtype=np.string_)
+            delimiter=',', dtype=str)
         id_size = helper_info[1:,0].size
 
         # Weapon level location in player input CSV.
@@ -166,6 +168,7 @@ class Heroes(object):
         self.purchase_cost = helper_info[1:,3].astype(np.float)
         self.level = np.zeros(id_size, dtype=np.int)
         self.weapon_levels = input_csv[start_idx:end_idx, 0].astype(np.int)
+        self.weapon_bonus = (1 + self.weapon_levels/2)
         self.set_bonus = 10*(self.weapon_levels.min())
 
         self.melee_type = self.type=='Melee'
@@ -181,17 +184,20 @@ class Heroes(object):
     def print_info(self):
         print('')
         print('HEROES: NAME'.ljust(30), '\t'+'TYPE'.ljust(10),
-            '\t'+'BASE COST'.rjust(9), '\t'+'WEAPON'.rjust(6))
+            '\t'+'BASE COST'.rjust(9), '\t'+'W. LEVEL'.rjust(10),
+            '\t'+'W. BONUS'.rjust(10))
         for i, name in enumerate(self.name):
             print(name.ljust(30), '\t'+self.type[i].ljust(10), 
                 '\t'+letters(self.purchase_cost[i]).rjust(9),
-                '\t'+str(self.weapon_levels[i]).rjust(6))
+                '\t'+str(self.weapon_levels[i]).rjust(10),
+                '\t'+str(self.weapon_bonus[i]).rjust(10))
+        print('Set Bonus:', 'x'+letters(self.set_bonus))
 
 
 class HeroMultipliers(object):
     def __init__(self, level_size):
         improvements_info = np.genfromtxt('csv\HelperImprovementsInfo.csv', 
-            delimiter=',', dtype=np.string_)   
+            delimiter=',', dtype=str)   
         
         self.levels = np.zeros(improvements_info[1:,0].size+2, dtype=np.int)
         self.levels[1] = 1
@@ -206,7 +212,7 @@ class HeroMultipliers(object):
 class HeroSkills(object):
     def __init__(self, id_size):
         csv_data = np.genfromtxt('csv\HelperSkillId.csv', 
-            delimiter=',', dtype=np.string_)
+            delimiter=',', dtype=str)
         self.bonus_id_tile = np.tile(csv_data[1:, 1], (id_size, 1))
         self.bonus_type_tile = np.tile(csv_data[1:, 3], (id_size, 1))
         self.bonus_mult_tile = np.tile(csv_data[1:, 4].astype(np.float), (id_size, 1)) 
@@ -216,7 +222,7 @@ class HeroSkills(object):
 class Pets(object):
     def __init__(self, input_csv):
         # Game data.
-        pet_csv = np.genfromtxt('csv\PetInfo.csv', delimiter=',', dtype=np.string_)
+        pet_csv = np.genfromtxt('csv\PetInfo.csv', delimiter=',', dtype=str)
         dmg_base = pet_csv[1:,1].astype(np.float)
         dmg_inc = pet_csv[1:,2:5].astype(np.float)
         bonus_base = pet_csv[1:,6].astype(np.float)
@@ -277,7 +283,7 @@ class Pets(object):
 class SkillTree(object):
     def __init__(self, input_csv):
         skill_tree = np.genfromtxt('csv\SkillTreeInfo.csv',
-            delimiter=',', dtype=np.string_)
+            delimiter=',', dtype=str)
         skill_tree[skill_tree == '-'] = 'NaN' # needed for setting float type here.
 
         # Find skill tree info locations in player input CSV.
@@ -307,7 +313,7 @@ class SkillTree(object):
 class SwordMaster(object):
     def __init__(self):
         improvements_info = np.genfromtxt('csv\PlayerImprovementsInfo.csv', 
-            delimiter=',', dtype=np.string_)   
+            delimiter=',', dtype=str)   
         
         self.levels = improvements_info[1:,0].astype(np.int)
         self.level_cap = self.levels.max()
@@ -318,7 +324,7 @@ class SwordMaster(object):
 
 
 class Stage(object):
-    def __init__(self, input_csv, skill_tree, hp_multiplier):
+    def __init__(self, input_csv, skill_tree, hp_multiplier, artifacts):
         # Initialize Stage Information.
         stage_cap = input_csv[:, 0][input_csv[:, 1]=='StageCap'][0].astype(np.int)
         ip_level = skill_tree.effect[skill_tree.attributes=='LessMonsters'][0].astype(np.int)
@@ -349,17 +355,22 @@ class Stage(object):
             + SVM.monsterGoldSlope*np.minimum(self.number, SVM.noMoreMonsterGoldSlope))
         self.base_boss_gold[0] = 30 # Ensures enough starting gold to purchase first hero.
 
-    def print_info(self, stage_skip_factor=100):
+        BOS_mult = artifacts.effect[artifacts.name=='Book of Shadows']
+        self.relics = (BOS_mult*((np.maximum(0, self.number - 75) / 14)**1.75)).astype(np.int)
+
+
+    def print_info(self, stage_skip_factor):
         # Print to screen all values of every stage_skip_factor stages.
         print('')
         print('STAGE'.rjust(5), '\t'+'TITAN HP'.rjust(10), '\t'+'BOSS HP'.rjust(10),
-            '\t'+'BASE GOLD'.rjust(10), '\t'+'TITAN #'.rjust(7))
-        for i in xrange(1, int(self.cap/stage_skip_factor)+1):
+            '\t'+'BASE GOLD'.rjust(10), '\t'+'TITAN #'.rjust(7), '\t'+'RELICS'.rjust(7))
+        for i in range(1, int(self.cap/stage_skip_factor)+1):
             print(str(i*stage_skip_factor).rjust(5),
                 '\t'+letters(self.titan_hp[i*stage_skip_factor]).rjust(10),
                 '\t'+letters(self.boss_hp[i*stage_skip_factor]).rjust(10),
                 '\t'+letters(self.base_titan_gold[i*stage_skip_factor]).rjust(10),
-                '\t'+str(self.titan_count[i*stage_skip_factor]).rjust(7)) 
+                '\t'+str(self.titan_count[i*stage_skip_factor]).rjust(7),
+                '\t'+str(self.relics[i*stage_skip_factor]).rjust(7)) 
 
 
 def letters(sci_number, option=''):
@@ -410,4 +421,4 @@ def letters(sci_number, option=''):
 
 if __name__ == '__main__':
     # Run directly to print out input values.
-    GameData('PlayerInput.csv').print_info()
+    GameData('playerinput.csv').print_info()

@@ -1,17 +1,19 @@
     GENERAL INPUT VALUES, (VALUE NAME NOTES),
-        294,ClanLevel,
-        2000,StartStage,
-        3501,StageCap,(Max=5500)
+        300,ClanLevel,
+        1,StartStage,
+        5000,StageCap,(Max=5500)
         4000,HeroLevelCap,
         20,TapsPerSec,(Max=20)
         50,ClanSize,
+        2,TransitionScreenDelay,(Seconds)
+        0,NoHeroes,(Disables Heroes)
         ,,
     ACTIVE SKILL LEVELS, (LEVEL NAME ACTIVATED),
-        0,HeavenlyStrike,
-        15,CriticalStrike,ACTIVATED
-        15,HandOfMidas,ACTIVATED
+        15,HeavenlyStrike,ACTIVATED
+        1,CriticalStrike,ACTIVATED
+        1,HandOfMidas,ACTIVATED
         15,FireSword,
-        15,WarCry,ACTIVATED
+        1,WarCry,ACTIVATED
         15,ShadowClone,
         ,,
     EQUIPMENT MULTIPLIERS, (MULTIPLIER TYPE EQUIPPED),
@@ -113,7 +115,7 @@
         1,FlameTouch,
         0,Magic Well,
         0,Mana Limit Break,
-        1,Heroic Might,
+        0,Heroic Might,
         1,Midas Ultimate,
         2,Mana Siphon,
         1,Lightning Strike,

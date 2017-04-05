@@ -4,6 +4,11 @@ from Classes import GameData, letters
 from ServerVarsModel import SVM
 import matplotlib.pyplot as plt
 
+"""
+The plotting functions aren't as well kept as the main simulation, 
+and some may break as I continue to make changes.
+"""
+
 def plot_results(player, stage):
     
     indices = player.total_dps_array>0
@@ -126,3 +131,27 @@ def plot_splash_compare(player, player2, stage):
     legend = ax.legend(loc='lower left', frameon=False)
     plt.tight_layout()
     plt.show()
+
+def plot_relics(player, stage):
+    domain = player.relic_efficiency[:, 0]>0
+    x = stage.number[domain]
+    y = player.relic_efficiency[:, 0][domain]
+    fig = plt.figure(figsize=(6*0.9, 4.5*0.9))
+    ax = fig.add_subplot(111, 
+        xlim=(min(x), max(x)),
+        ylim=(min(y[10:]), 1.1*max(y)))
+    ax.set_xlabel('$\\rm Stage\ Number$', fontsize=12)
+    ax.set_ylabel('${\\rm Relic\ Efficiency}$', fontsize=12)
+    max_efficiency = letters(max(player.relic_efficiency[:, 0]))
+    title = ('Most Efficient Stage: '
+        + str((player.relic_efficiency[:, 0]).argmax())
+        + '     Efficiency: '+ max_efficiency)
+    ax.set_title(title, fontsize=12, loc=('center'))
+    ax.plot(x, y, 'o', markersize=2, markeredgewidth=0.5, color='b',
+        fillstyle='none')
+    plt.tight_layout()
+    plt.show()
+
+
+
+            
