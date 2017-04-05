@@ -24,7 +24,7 @@ There is great potential for model analysis using TT2-Sim. A full overview of va
 
 # Sample Text Output
 
-```Markdown
+```
     GENERAL RESULTS:
         Final Stage: 3570, Boss HP: 23.81ck, Damage: 17.54ck
         Hero Levels: [4000 4000 4000 4000 4000 4000 4000 4000] 
