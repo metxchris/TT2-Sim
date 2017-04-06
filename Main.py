@@ -112,7 +112,7 @@ class Player(object):
         self.sword_master_level = 0
         self.sword_master_multiplier = 1
         self.pet_damage_per_attack = 0
-        self.tap_damage_from_hero = 0
+        self.tap_from_hero = 0
         self.tap_with_average_crit = 0
         self.average_tap_damage = 0
         self.tap_damage = 0
@@ -147,33 +147,25 @@ class Player(object):
         # Heavenly Strike active skill is set to max because it isn't used in any
         # DPS calculations.
         self.heavenly_strike = max(1, max(15, active_skills.heavenly_strike)
-            *artifacts.effect[artifacts.name=='Titan\'s Mask'][0])
-        self.hom = (active_skills.hom
-            * artifacts.effect[artifacts.name=='Laborer\'s Pendant'][0])
-        self.war_cry = max(1, active_skills.war_cry
-            * artifacts.effect[artifacts.name=='Parchment of Foresight'][0])
-        self.shadow_clone = (active_skills.shadow_clone
-            * artifacts.effect[artifacts.name=='Elixir of Eden'][0])
-        self.fire_sword = max(1, active_skills.fire_sword
-            * artifacts.effect[artifacts.name=='Bringer of Ragnarok'][0])
+            * artifacts.hs_bonus)
+        self.hom = active_skills.hom*artifacts.hom_bonus
+        self.war_cry = max(1, active_skills.war_cry*artifacts.wc_bonus)
+        self.shadow_clone = active_skills.shadow_clone*artifacts.sc_bonus
+        self.fire_sword = max(1, active_skills.fire_sword*artifacts.fs_bonus)
 
         # War Cry Skill Tree Boost (This boosts avg DPS but not displayed DPS)
-        war_cry_tree = max(1, 
-            skill_tree.effect[skill_tree.attributes=='HelperDmgSkillBoost'][0])
-        self.war_cry_talent = 0.9 + 0.1*war_cry_tree
+        # Heroes have 10% chance to crit during WC with Heroic Might.
+        self.war_cry_talent = 0.9 + 0.1*skill_tree.wc_bonus
 
+        # Additive skill-tree bonuses.
         if self.heavenly_strike>1:
-            self.heavenly_strike += (artifacts.effect[artifacts.name=='Titan\'s Mask'][0]
-                * skill_tree.effect[skill_tree.attributes=='BurstSkillBoost'][0])
+            self.heavenly_strike += artifacts.hs_bonus*skill_tree.hs_bonus
         if self.fire_sword>1:
-            self.fire_sword += (artifacts.effect[artifacts.name=='Bringer of Ragnarok'][0]
-                * skill_tree.effect[skill_tree.attributes=='FireTapSkillBoost'][0])
-        
+            self.fire_sword += artifacts.fs_bonus*skill_tree.fs_bonus
+
         # Pet damage multiplier.
-        self.pet_mult = (pets.damage_mult
-            * artifacts.effect[artifacts.name=='Furies Bow'][0]
-            * skill_tree.effect[skill_tree.attributes=='PetDmg'][0]
-            * equipment.pet_mult)
+        self.pet_mult = (pets.damage_mult*artifacts.pet_damage
+            * skill_tree.pet_damage*equipment.pet_damage)
 
         # Pet auto-attack and attack-rate.
         self.pet_auto = 1 if (pets.level.sum()>=SVM.petAutoAttackLevel) else 0
@@ -181,64 +173,44 @@ class Player(object):
             + self.pet_auto/SVM.petAutoAttackDuration)
 
         # Skill tree values.
-        self.flash_zip = skill_tree.effect[skill_tree.attributes=='BossDmgQTE'][0]
-        self.boss_timer = 30 + skill_tree.effect[skill_tree.attributes=='BossTimer'][0]
+        self.flash_zip = skill_tree.flash_zip
+        self.boss_timer = 30 + skill_tree.boss_timer
 
         # Artifact damage multiplier.
         self.artifact_damage = artifacts.total_damage
 
-        # Pet bonus abbreviations used in multipliers below.
-        pet_bt = pets.bonus_type
-        pet_bv = pets.bonus_multipliers
-
         # Damage type multipliers
-        self.base_all_damage = (pet_bv[pet_bt=='AllDamage'].prod()
-            * artifacts.effect[artifacts.name=='Divine Retribution'][0]
+        self.base_all_damage = (pets.all_damage*artifacts.all_damage
             * equipment.all_damage*self.clan_bonus*self.artifact_damage
-            * max(1, heroes.set_bonus))
-        self.base_all_hero_damage = (pet_bv[pet_bt=='AllHelperDamage'].prod()
-            * artifacts.effect[artifacts.name=='Blade of Damocles'][0]
+            * heroes.set_bonus)
+        self.base_all_hero_damage = (pets.all_hero_damage*artifacts.all_hero_damage
             * equipment.all_hero_damage*self.war_cry)
-        self.base_melee_mult = (pet_bv[pet_bt=='MeleeHelperDamage'].prod()
-            * artifacts.effect[artifacts.name=='Fruit of Eden'][0]
-            * max(1, skill_tree.effect[skill_tree.attributes=='MeleeHelperDmg'][0])
-            * equipment.melee_mult)
-        self.base_spell_mult = (pet_bv[pet_bt=='SpellHelperDamage'].prod()
-            * artifacts.effect[artifacts.name=='Charm of the Ancient'][0]
-            * max(1, skill_tree.effect[skill_tree.attributes=='SpellHelperDmg'][0])
-            * equipment.spell_mult)
-        self.base_ranged_mult = (pet_bv[pet_bt=='RangedHelperDamage'].prod()
-            * artifacts.effect[artifacts.name=='The Sword of Storms'][0]
-            * max(1, skill_tree.effect[skill_tree.attributes=='RangedHelperDmg'][0])
-            * equipment.ranged_mult)
-        self.base_tap_mult = (pet_bv[pet_bt=='TapDamage'].prod()
-            * artifacts.effect[artifacts.name=='Drunken Hammer'][0]
+        self.base_melee_mult = (pets.melee_damage*artifacts.melee_damage
+            * skill_tree.melee_damage*equipment.melee_mult)
+        self.base_spell_mult = (pets.spell_damage*artifacts.spell_damage
+            * skill_tree.spell_damage*equipment.spell_mult)
+        self.base_ranged_mult = (pets.ranged_damage*artifacts.ranged_damage
+            * skill_tree.ranged_damage*equipment.ranged_mult)
+        self.base_tap_mult = (pets.tap_damage*artifacts.tap_damage
             * equipment.tap_damage) 
-        self.splash_damage = (pet_bv[pet_bt=='SplashDamage'][0]
-            + skill_tree.effect[skill_tree.attributes=='SplashDmg'][0])
+        self.splash_damage = pets.splash_damage+skill_tree.splash_damage
 
         # Gold multipliers.
-        self.base_all_gold = (pet_bv[pet_bt=='GoldAll'].prod()
-            * artifacts.effect[artifacts.name=='Book of Prophecy'][0]
-            * equipment.all_gold)
-        self.base_titan_gold = artifacts.effect[artifacts.name=='Stone of the Valrunes'][0]
-        self.base_boss_gold = artifacts.effect[artifacts.name=='Heroic Shield'][0]
-        self.base_chest_gold = (artifacts.effect[artifacts.name=='Chest of Contentment'][0]
-            * equipment.chest_gold)
-        self.base_chest_chance = (SVM.chestersonChance 
-            + artifacts.effect[artifacts.name=='Egg of Fortune'][0]
-            + equipment.chest_chance/100)
-        self.base_x10_gold_chance = (SVM.goldx10Chance
-         + artifacts.effect[artifacts.name=='Divine Chalice'][0])
-        self.tf_chance = 0.01 + skill_tree.effect[skill_tree.attributes=='MultiMonsters'][0]
+        self.base_all_gold = pets.all_gold*artifacts.all_gold*equipment.all_gold
+        self.base_titan_gold = artifacts.titan_gold
+        self.base_boss_gold = artifacts.boss_gold
+        self.base_chest_gold = artifacts.chest_gold*equipment.chest_gold
+        self.base_chest_chance = (artifacts.chest_chance + equipment.chest_chance/100
+            +SVM.chestersonChance)
+        self.base_x10_gold_chance = SVM.goldx10Chance + artifacts.x10_gold_chance
+        self.tf_chance = 0.01 + skill_tree.tf_chance
         self.tf_bonus = 1 + 2.5*self.tf_chance
 
         # Misc bonuses.
-        self.mana_regen = pet_bv[pet_bt=='ManaRegen'][0] #not used yet
-        self.base_crit_chance = (SVM.playerCritChance
-            + artifacts.effect[artifacts.name=='Axe of Muerte'][0]
+        self.mana_regen = pets.mana_regen #not used yet
+        self.base_crit_chance = (SVM.playerCritChance+artifacts.crit_chance
             + equipment.crit_chance/100 + active_skills.crit_strike/100)
-        self.cost_reduction = artifacts.effect[artifacts.name=='Staff of Radiance'][0]
+        self.cost_reduction = artifacts.cost_reduction
 
         # Starting gold (gives 20x titan gold from previous stage with min = 30 gold)
         self.stage = self.start_stage
@@ -399,7 +371,7 @@ class Player(object):
             # Hero level and hero id match condition.
             condition = ((hl_tile>=bl_tile)*(hi_tile==bi_tile))
 
-            # Bonus effect matches.
+            # Skill effect matches.
             cd_match = (bt_tile[condition]=='CritDamage')
             cc_match = (bt_tile[condition]=='CritChance')
             bg_match = (bt_tile[condition]=='GoldBoss')
@@ -416,35 +388,39 @@ class Player(object):
             chc_match = (bt_tile[condition]=='ChestChance')
             chg_match = (bt_tile[condition]=='ChestAmount')
 
-            # Apply bonuses.
-            self.tap_damage_from_hero = bm_tile[condition][th_match].sum()
-            self.crit_damage = bm_tile[condition][cd_match].prod()
-            self.crit_chance = min(SVM.maxCritChance, self.base_crit_chance
-                + bm_tile[condition][cc_match].sum())
-            self.boss_gold = (self.base_boss_gold
-                * bm_tile[condition][bg_match].prod())
-            self.all_gold = (self.base_all_gold
-                * bm_tile[condition][ag_match].prod())
-            self.all_damage = (self.base_all_damage
-                * bm_tile[condition][ad_match].prod())
-            self.all_hero_damage = (self.base_all_hero_damage
-                * bm_tile[condition][ah_match].prod())
-            self.melee_mult = (self.base_melee_mult
-                * bm_tile[condition][md_match].prod())
-            self.spell_mult = (self.base_spell_mult
-                * bm_tile[condition][sd_match].prod())
-            self.ranged_mult = (self.base_ranged_mult
-                * bm_tile[condition][rd_match].prod())
-            self.chest_chance = (self.base_chest_chance
-                + bm_tile[condition][chc_match].sum())
-            self.chest_gold = (self.base_chest_gold
-                * bm_tile[condition][chg_match].prod())
-            self.titan_gold = (self.base_titan_gold
-                * bm_tile[condition][tg_match].prod())
-            self.x10_gold_chance = (self.base_x10_gold_chance
-                + bm_tile[condition][tx_match].sum())
-            self.tap_mult = (self.base_tap_mult
-                * bm_tile[condition][td_match].sum())
+            # Skill effect values.
+            tap_from_hero = bm_tile[condition][th_match].sum()
+            crit_damage = bm_tile[condition][cd_match].prod()
+            crit_chance = bm_tile[condition][cc_match].sum()
+            boss_gold = bm_tile[condition][bg_match].prod()
+            all_gold = bm_tile[condition][ag_match].prod()
+            all_damage = bm_tile[condition][ad_match].prod()
+            all_hero_damage = bm_tile[condition][ah_match].prod()
+            melee_damage = bm_tile[condition][md_match].prod()
+            spell_damage = bm_tile[condition][sd_match].prod()
+            ranged_damage = bm_tile[condition][rd_match].prod()
+            chest_chance = bm_tile[condition][chc_match].sum()
+            chest_gold = bm_tile[condition][chg_match].prod()
+            titan_gold = bm_tile[condition][tg_match].prod()
+            x10_chance = bm_tile[condition][tx_match].sum()
+            tap_damage = bm_tile[condition][td_match].sum()
+
+            # Combine skill bonuses from heroes with base values.
+            self.tap_from_hero = tap_from_hero
+            self.crit_damage = crit_damage
+            self.crit_chance = min(SVM.maxCritChance, self.base_crit_chance+crit_chance)
+            self.boss_gold = self.base_boss_gold*boss_gold
+            self.all_gold = self.base_all_gold*all_gold
+            self.all_damage = self.base_all_damage*all_damage
+            self.all_hero_damage = self.base_all_hero_damage*all_hero_damage
+            self.melee_mult = self.base_melee_mult*melee_damage
+            self.spell_mult = self.base_spell_mult*spell_damage
+            self.ranged_mult = self.base_ranged_mult*ranged_damage
+            self.chest_chance = self.base_chest_chance+chest_chance
+            self.chest_gold = self.base_chest_gold*chest_gold
+            self.titan_gold = self.base_titan_gold*titan_gold
+            self.x10_gold_chance = self.base_x10_gold_chance+x10_chance
+            self.tap_mult = self.base_tap_mult*tap_damage
 
     def calc_dps(self, heroes):
         # Update DPS only when heroes have been purchased or upgraded.
@@ -475,7 +451,7 @@ class Player(object):
                 * self.sword_master_multiplier*SVM.playerDamageMult
                 * self.tap_mult*self.all_damage)
             self.tap_damage = (self.sword_master_damage
-                + self.tap_damage_from_hero*self.total_hero_dps)
+                + self.tap_from_hero*self.total_hero_dps)
             # tap_with_average_crit is not the same as average tap damage.
             self.tap_with_average_crit = (self.tap_damage
                 * (1 + self.crit_chance*self.crit_damage

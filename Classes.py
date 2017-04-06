@@ -62,19 +62,19 @@ class ActiveSkills(object):
 
 class Artifacts(object):
     def __init__(self, input_csv):
-        artifacts = np.genfromtxt('csv\ArtifactInfo.csv', 
+        artifacts_csv = np.genfromtxt('csv\ArtifactInfo.csv', 
             delimiter=',', dtype=str)
 
         # Find artifact info in player input CSV.
         start_idx = np.array([input_csv[:,0]=='ARTIFACT LEVELS']).argmax()+1
-        end_idx = start_idx + artifacts[1:,0].size
+        end_idx = start_idx + artifacts_csv[1:,0].size
 
-        self.id = artifacts[1:,0]
-        self.name = artifacts[1:,9]
-        self.max_level = artifacts[1:,1].astype(np.int)
-        self.type = artifacts[1:,3]
-        self.effect_inc = artifacts[1:,4].astype(np.float)
-        self.damage_inc = artifacts[1:,5].astype(np.float)
+        self.id = artifacts_csv[1:,0]
+        self.name = artifacts_csv[1:,9]
+        self.max_level = artifacts_csv[1:,1].astype(np.int)
+        self.type = artifacts_csv[1:,3]
+        self.effect_inc = artifacts_csv[1:,4].astype(np.float)
+        self.damage_inc = artifacts_csv[1:,5].astype(np.float)
 
         # Set artifact effects and damages based on player artifact levels.
         self.level = input_csv[start_idx:end_idx, 0].astype(np.int)
@@ -82,20 +82,43 @@ class Artifacts(object):
         self.damage = self.damage_inc*self.level
 
         # Add base level to effect multipliers where needed.
-        artifact_names = (['Furies Bow', 'Heavenly Sword', 'Fruit of Eden', 
+        artifact_names = ('Furies Bow', 'Heavenly Sword', 'Fruit of Eden', 
             'Charm of the Ancient', 'The Sword of Storms', 'Book of Prophecy',
             'Drunken Hammer', 'Divine Retribution', 'Laborer\'s Pendant',
             'Blade of Damocles', 'Parchment of Foresight', 'Heroic Shield',
             'Stone of the Valrunes', 'Elixir of Eden', 'Bringer of Ragnarok',
             'Titan\'s Mask', 'Chest of Contentment', 'Hero\'s Blade',
             'Helmet of Madness', 'Lethe Water', 'Amethyst Staff',
-            'Book of Shadows'])
+            'Book of Shadows')
         for name in artifact_names:
             self.effect[self.name==name] += 1
 
         # Total artifact damage bonus.
         self.total_damage = ((1+np.sum(self.damage))
             * self.effect[self.name=='Heavenly Sword'][0])
+        # Active skill bonuses.
+        self.hs_bonus = self.effect[self.name=='Titan\'s Mask'][0]
+        self.hom_bonus = self.effect[self.name=='Laborer\'s Pendant'][0]
+        self.wc_bonus = self.effect[self.name=='Parchment of Foresight'][0]
+        self.sc_bonus = self.effect[self.name=='Elixir of Eden'][0]
+        self.fs_bonus = self.effect[self.name=='Bringer of Ragnarok'][0]
+        # Damage type bonuses.
+        self.all_damage = self.effect[self.name=='Divine Retribution'][0]
+        self.all_hero_damage = self.effect[self.name=='Blade of Damocles'][0]
+        self.melee_damage = self.effect[self.name=='Fruit of Eden'][0]
+        self.spell_damage = self.effect[self.name=='Charm of the Ancient'][0]
+        self.ranged_damage = self.effect[self.name=='The Sword of Storms'][0]
+        self.pet_damage = self.effect[self.name=='Furies Bow'][0]
+        self.tap_damage = self.effect[self.name=='Drunken Hammer'][0]
+        self.crit_chance = self.effect[self.name=='Axe of Muerte'][0]
+        # Gold bonuses.
+        self.all_gold = self.effect[self.name=='Book of Prophecy'][0]
+        self.titan_gold = self.effect[self.name=='Stone of the Valrunes'][0]
+        self.boss_gold = self.effect[self.name=='Heroic Shield'][0]
+        self.chest_gold = self.effect[self.name=='Chest of Contentment'][0]
+        self.chest_chance = self.effect[self.name=='Egg of Fortune'][0]
+        self.x10_gold_chance = self.effect[self.name=='Divine Chalice'][0]
+        self.cost_reduction = self.effect[self.name=='Staff of Radiance'][0]
 
     def print_info(self):
         print('')
@@ -128,22 +151,21 @@ class Equipment(object):
         self.chest_chance = max(a, effects[(types=='ChestChance')*equipped])[0]
         self.all_hero_damage = max(b, effects[(types=='AllHeroDamage')*equipped])[0]
         self.all_damage = max(b, effects[(types=='AllDamage')*equipped])[0]
-        self.pet_mult = max(b, effects[(types=='PetDamage')*equipped])[0]
+        self.pet_damage = max(b, effects[(types=='PetDamage')*equipped])[0]
         self.crit_damage = max(b, effects[(types=='CritDamage')*equipped])[0]
         self.crit_chance = max(a, effects[(types=='CritChance')*equipped])[0]
         self.titan_hp = min(b, effects[(types=='TitanHP')*equipped])[0]
         self.tap_damage = max(b, effects[(types=='TapDamage')*equipped])[0]
 
     def print_info(self):
-        names = (['Sword', 'Sword', 'Sword', 'Helmet', 'Helmet', 'Helmet',
-            'Armor', 'Armor', 'Aura', 'Aura', 'Aura', 'Slash', 'Slash'])
-        types = (['AllDamage', 'AllHeroDamage', 'CritDamage', 'MeleeDamage',
+        names = ('Sword',)*3+('Helmet',)*3+('Armor',)*2+('Aura',)*3+('Slash',)*2
+        types = ('AllDamage', 'AllHeroDamage', 'CritDamage', 'MeleeDamage',
             'SpellDamage', 'RangedDamage', 'AllGold', 'ChestGold', 'CritChance',
-            'ChestChance', 'TitanHP', 'PetDamage', 'TapDamage'])
-        effects = ([self.all_damage, self.all_hero_damage, self.crit_damage, 
+            'ChestChance', 'TitanHP', 'PetDamage', 'TapDamage')
+        effects = (self.all_damage, self.all_hero_damage, self.crit_damage, 
             self.melee_mult, self.spell_mult, self.ranged_mult,
             self.all_gold, self.chest_gold, self.crit_chance, self.chest_chance,
-            self.titan_hp, self.pet_mult, self.tap_damage])
+            self.titan_hp, self.pet_damage, self.tap_damage)
 
         print('')
         print('EQUIPMENT'.ljust(10), '\t'+'TYPE'.ljust(13), '\t'+'EFFECT'.rjust(6))
@@ -174,17 +196,11 @@ class Heroes(object):
         self.level = np.zeros(id_size, dtype=np.int)
         self.weapon_levels = input_csv[start_idx:end_idx, 0].astype(np.int)
         self.weapon_bonus = (1 + self.weapon_levels/2)
-        self.set_bonus = 10*(self.weapon_levels.min())
+        self.set_bonus = max(1, 10*(self.weapon_levels.min()))
 
         self.melee_type = self.type=='Melee'
         self.spell_type = self.type=='Spell'
         self.ranged_type = self.type=='Ranged'
-
-        self.melee_dps = 0
-        self.spell_dps = 0
-        self.ranged_dps = 0
-        self.total_dps = 0
-        self.level_cap = 5000 # avoid overflow errors
 
     def print_info(self):
         print('')
@@ -267,6 +283,20 @@ class Pets(object):
         self.damage_mult = (self.active_damage[self.name==self.active_name][0]
             + self.passive_damage[self.name!=self.active_name].sum() + 1)
 
+        # Type bonuses.
+        pet_bt = self.bonus_type
+        pet_bv = self.bonus_multipliers
+
+        self.all_damage = pet_bv[pet_bt=='AllDamage'].prod()
+        self.all_hero_damage = pet_bv[pet_bt=='AllHelperDamage'].prod()
+        self.melee_damage = pet_bv[pet_bt=='MeleeHelperDamage'].prod()
+        self.spell_damage = pet_bv[pet_bt=='SpellHelperDamage'].prod()
+        self.ranged_damage = pet_bv[pet_bt=='RangedHelperDamage'].prod()
+        self.tap_damage = pet_bv[pet_bt=='TapDamage'].prod()
+        self.all_gold = pet_bv[pet_bt=='GoldAll'].prod()
+        self.splash_damage = pet_bv[pet_bt=='SplashDamage'][0]
+        self.mana_regen = pet_bv[pet_bt=='ManaRegen'][0]
+
         # Error check.
         if (self.name!=self.active_name).all():
             print('ERROR: No matches for active pet name from player input CSV.')
@@ -287,22 +317,41 @@ class Pets(object):
 
 class SkillTree(object):
     def __init__(self, input_csv):
-        skill_tree = np.genfromtxt('csv\SkillTreeInfo.csv',
+        skill_tree_csv = np.genfromtxt('csv\SkillTreeInfo.csv',
             delimiter=',', dtype=str)
-        skill_tree[skill_tree == '-'] = 'NaN' # needed for setting float type here.
+        skill_tree_csv[skill_tree_csv == '-'] = 'NaN' # needed for setting float type here.
 
         # Find skill tree info locations in player input CSV.
         start_idx = np.array([input_csv[:, 0]=='SKILL TREE LEVELS']).argmax()+1
-        end_idx = start_idx + skill_tree[1:, 0].size
+        end_idx = start_idx + skill_tree_csv[1:, 0].size
 
-        self.attributes = skill_tree[1:, 0]
-        self.effect_level = skill_tree[1:, 25:].astype(np.float)
+        self.attributes = skill_tree_csv[1:, 0]
+        self.effect_level = skill_tree_csv[1:, 25:].astype(np.float)
         self.name = input_csv[start_idx:end_idx, 1]
         self.level = input_csv[start_idx:end_idx, 0].astype(np.int)
         self.effect = np.zeros(self.level.size)
 
         for i, j in enumerate(self.level):
             self.effect[i] = self.effect_level[i, self.level[i]]
+
+        # Active Skill Bonuses.
+        self.wc_bonus = self.effect[self.attributes=='HelperDmgSkillBoost'][0]
+        self.hs_bonus = self.effect[self.attributes=='BurstSkillBoost'][0]
+        self.fs_bonus = self.effect[self.attributes=='FireTapSkillBoost'][0]
+
+        # Damage Bonuses.
+        self.pet_damage = self.effect[self.attributes=='PetDmg'][0]
+        self.melee_damage = max(1, self.effect[self.attributes=='MeleeHelperDmg'][0])
+        self.spell_damage = max(1, self.effect[self.attributes=='SpellHelperDmg'][0])
+        self.ranged_damage = max(1, self.effect[self.attributes=='RangedHelperDmg'][0])
+        self.splash_damage = self.effect[self.attributes=='SplashDmg'][0]
+
+        # Misc Effects.
+        self.flash_zip = self.effect[self.attributes=='BossDmgQTE'][0]
+        self.boss_timer = self.effect[self.attributes=='BossTimer'][0]
+        self.tf_chance = self.effect[self.attributes=='MultiMonsters'][0]
+        
+
 
     def print_info(self):
         print('')
