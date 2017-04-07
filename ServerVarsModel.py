@@ -103,7 +103,7 @@ class SVM(object):
 
      killAnimationTime = 0.3
 
-     offlineKillAnimationTime = 1
+     offlineKillAnimationTime = 0.7 #updated
 
      activeSkillCostMult = 12.0
 

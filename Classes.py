@@ -8,6 +8,9 @@ from ServerVarsModel import SVM
 Notes on Python v2.7 compatibility:
 This code might still work in v2.7 if all instances of "dtype=str"
 are replaced with "dtype=np.string_", without the quotes.
+
+This file can be directly run to split out tables of all input data
+used in the simulation.
 """
   
 class GameData(object):
@@ -75,6 +78,8 @@ class Artifacts(object):
         self.type = artifacts_csv[1:,3]
         self.effect_inc = artifacts_csv[1:,4].astype(np.float)
         self.damage_inc = artifacts_csv[1:,5].astype(np.float)
+        self.cost_coef = artifacts_csv[1:,6].astype(np.float)
+        self.cost_expo = artifacts_csv[1:,7].astype(np.float)
 
         # Set artifact effects and damages based on player artifact levels.
         self.level = input_csv[start_idx:end_idx, 0].astype(np.int)
@@ -135,6 +140,15 @@ class Artifacts(object):
 
 class Equipment(object):
     def __init__(self, input_csv):
+        #equip_csv = np.genfromtxt('csv\EquipmentInfo.csv', delimiter=',', dtype=str)
+
+        # Equipment formula:
+        #double num3 = num * (this.attributeBase + this.attributeInc * (double)num2);
+        #num2 = this.level
+        #num = artifact bonus
+        #Mathf.Max(1, Mathf.FloorToInt((float)(this.currentEquipment.level / 10)
+        # Your real equipment level is Level*10 + randint(0, 9)
+
         start_idx = np.array([input_csv[:,0]=='EQUIPMENT MULTIPLIERS']).argmax()+1
         end_idx = start_idx + np.array([input_csv[start_idx:,0]=='']).argmax()
         types = input_csv[start_idx:end_idx, 1]
@@ -412,6 +426,8 @@ class Stage(object):
         BOS_mult = artifacts.effect[artifacts.name=='Book of Shadows']
         self.relics = (BOS_mult*((np.maximum(0, self.number - 75) / 14)**1.75)).astype(np.int)
 
+        self.transitions = np.zeros_like(self.number)
+        self.transitions[0::5] =  1
 
     def print_info(self, stage_skip_factor):
         # Print to screen all values of every stage_skip_factor stages.

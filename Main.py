@@ -5,6 +5,7 @@ from copy import deepcopy
 from Classes import GameData, letters
 from Plotting import *
 from ServerVarsModel import SVM
+from fractions import Fraction
 
 """
 TT2-Sim by MetxChris.
@@ -17,7 +18,7 @@ Designed to run in Python 3.6+
     Most if not all artifacts other than the skill duration/skill cost
     artifacts should be referenced here.
 
-3. Skill Tree Skills in Use:
+3. Skill Tree Talents in Use:
     a. Yellow Tree: Flash Zip, Boss Timer.
     The remaining skills here are questionable at best and/or their
     effects aren't very well known. In particular, PET:HOM gives
@@ -39,7 +40,7 @@ Designed to run in Python 3.6+
     included if I were to derive a good model to approximate how much 
     damage it does on average per titan or boss. 
 
-4. Equipmen/Pet Bonuses in Use:
+4. Equipment/Pet Bonuses in Use:
     All Equipment bonuses are used and All pet bonuses should be in play
     other than for Fluffers.
 
@@ -53,7 +54,7 @@ TODO:
 """
 
 class Player(object):
-    def __init__(self, data, advanced_results):
+    def __init__(self, data):
 
         # Unpack data object.
         input_csv = data.input
@@ -72,17 +73,6 @@ class Player(object):
         end_idx = np.array([input_csv[start_idx:,0]=='']).argmax()+1
         input_values = input_csv[start_idx:end_idx,0].astype(np.float)
         input_type = input_csv[start_idx:end_idx,1]
-        
-        # Advanced results will print more details but increases run time.
-        self.advanced_results = advanced_results
-        self.evolve1_stage = np.zeros_like(heroes.level)
-        self.evolve2_stage = np.zeros_like(heroes.level)
-        self.max_splash_stages = np.zeros(4, dtype=np.int)
-        self.continuous_splash_stages = np.zeros_like(self.max_splash_stages)
-        self.splash_array = np.zeros_like(stage.number, dtype=np.int)
-        self.splash_array_penalty = np.zeros_like(self.splash_array)
-        self.run_times = np.zeros(3, dtype=np.float)
-        self.num_strikes = 0
 
         # Store player input values.
         self.clan_level = max(input_values[input_type=='ClanLevel'][0], 1).astype(np.int)
@@ -95,12 +85,31 @@ class Player(object):
         self.transition_delay = max(input_values[input_type=='TransitionScreenDelay'][0], 0.3)
         self.no_heroes = input_values[input_type=='NoHeroes'][0]
 
+        # Misc calculations.
+        self.evolve1_stage = np.zeros_like(heroes.level)
+        self.evolve2_stage = np.zeros_like(heroes.level)
+        self.max_splash_stages = np.zeros(4, dtype=np.int)
+        self.continuous_splash_stages = np.zeros_like(self.max_splash_stages)
+        self.splash_array = np.zeros_like(stage.number, dtype=np.int)
+        self.splash_array_penalty = np.zeros_like(self.splash_array)
+        self.run_times = np.zeros(6, dtype=np.float)
+        self.num_strikes = 0
+
+        # Output performance arrays (attacks, duration).
+        self.attack_durations = ([0.1, 0.2, 0.3, 0.4, 0.5, 
+            0.6, 0.8, 1.0, 1.5, 2.0, 3.0])
+        self.pet_performance = np.zeros(2, dtype=np.float)
+        self.hs_performance = np.zeros(2, dtype=np.float)
+        self.tap_performance = np.zeros(2, dtype=np.float)
+        self.trans_performance = np.zeros(2, dtype=np.float)
+        self.performance_times = np.zeros(len(self.attack_durations))
+        self.performance_attacks = np.zeros(len(self.attack_durations))
+
         # Initialize Default Values.
         self.hero_level = heroes.level
         self.hero_dps = np.zeros_like(self.hero_level, dtype=np.float)
         self.default_levels_to_buy = 10*np.ones_like(heroes.level).astype(np.int)
         self.hero_multiplier = np.zeros_like(heroes.level, dtype=np.float)
-        self.stage_duration_stages = np.zeros(4, dtype=np.int)
         self.heroes_bought = False
         self.end_simulation = False
         self.time = 0
@@ -110,7 +119,6 @@ class Player(object):
         self.sword_master_bought = False
         self.sword_master_damage =0
         self.sword_master_level = 0
-        self.sword_master_multiplier = 1
         self.pet_damage_per_attack = 0
         self.tap_from_hero = 0
         self.tap_with_average_crit = 0
@@ -126,22 +134,22 @@ class Player(object):
         self.total_boss_dps = 0
         self.shadow_clone_dps = 0
         self.gold_spent = 0
-        self.num_transitions = 0
 
         # Values stored for each stage.
-        self.num_pet_attacks = np.zeros_like(stage.number, dtype=np.float)
         self.relic_efficiency = np.zeros((stage.number.size, 2), dtype=np.float)
         self.pet_attack_damage_array = np.zeros_like(stage.number, dtype=np.float)
         self.tap_with_avg_crit_array = np.zeros_like(stage.number, dtype=np.float)
         self.tap_damage_array = np.zeros((stage.number.size, 2), dtype=np.float)
-        self.total_dps_array = np.zeros_like(stage.number, dtype=np.float)
+        self.total_dps_array = np.zeros((stage.number.size, 2), dtype=np.float)
         self.hero_dps_array = np.zeros_like(stage.number, dtype=np.float)
         self.tap_dps_array = np.zeros_like(stage.number, dtype=np.float)
         self.gold_array = np.zeros((stage.number.size, 3), dtype=np.float)
 
         # Clan Quest Bonus.
-        self.clan_bonus = (SVM.clanBonusBase**min(self.clan_level, SVM.clanQuestStageNerf)
-            * SVM.clanBonusBaseNerf**max(self.clan_level - SVM.clanQuestStageNerf, 0))
+        self.clan_bonus = (SVM.clanBonusBase
+            **min(self.clan_level, SVM.clanQuestStageNerf)
+            * SVM.clanBonusBaseNerf
+            **max(self.clan_level - SVM.clanQuestStageNerf, 0))
 
         # Initialize active skill bonuses (crit strike activated later).
         # Heavenly Strike active skill is set to max because it isn't used in any
@@ -172,8 +180,8 @@ class Player(object):
         self.pet_rate = (self.taps_sec/SVM.tapsPerSecond
             + self.pet_auto/SVM.petAutoAttackDuration)
 
-        # Skill tree values.
-        self.flash_zip = skill_tree.flash_zip
+        # Skill tree values; flash_zip requires tapping.
+        self.flash_zip = skill_tree.flash_zip*(self.taps_sec>0)
         self.boss_timer = 30 + skill_tree.boss_timer
 
         # Artifact damage multiplier.
@@ -183,8 +191,8 @@ class Player(object):
         self.base_all_damage = (pets.all_damage*artifacts.all_damage
             * equipment.all_damage*self.clan_bonus*self.artifact_damage
             * heroes.set_bonus)
-        self.base_all_hero_damage = (pets.all_hero_damage*artifacts.all_hero_damage
-            * equipment.all_hero_damage*self.war_cry)
+        self.base_all_hero_damage = (pets.all_hero_damage
+            *artifacts.all_hero_damage* equipment.all_hero_damage*self.war_cry)
         self.base_melee_mult = (pets.melee_damage*artifacts.melee_damage
             * skill_tree.melee_damage*equipment.melee_mult)
         self.base_spell_mult = (pets.spell_damage*artifacts.spell_damage
@@ -200,8 +208,8 @@ class Player(object):
         self.base_titan_gold = artifacts.titan_gold
         self.base_boss_gold = artifacts.boss_gold
         self.base_chest_gold = artifacts.chest_gold*equipment.chest_gold
-        self.base_chest_chance = (artifacts.chest_chance + equipment.chest_chance/100
-            +SVM.chestersonChance)
+        self.base_chest_chance = (artifacts.chest_chance 
+            + equipment.chest_chance/100 + SVM.chestersonChance)
         self.base_x10_gold_chance = SVM.goldx10Chance + artifacts.x10_gold_chance
         self.tf_chance = 0.01 + skill_tree.tf_chance
         self.tf_bonus = 1 + 2.5*self.tf_chance
@@ -217,7 +225,8 @@ class Player(object):
         self.current_gold = (20*stage.base_titan_gold[self.stage-1]
             *self.base_titan_gold*self.base_all_gold)
 
-        # Final initializations using base values.
+        # Final initializations; these get overwritten in hero_upgrades().
+        self.sword_master_mult = 1
         self.crit_damage = 1
         self.crit_chance = min(SVM.maxCritChance, self.base_crit_chance)
         self.boss_gold = self.base_boss_gold
@@ -241,7 +250,8 @@ class Player(object):
 
             levels_to_buy = 10
             level_cost =  (SVM.playerUpgradeCostBase 
-                * (SVM.playerUpgradeCostGrowth**(self.sword_master_level + levels_to_buy) 
+                * (SVM.playerUpgradeCostGrowth
+                    ** (self.sword_master_level + levels_to_buy) 
                     - SVM.playerUpgradeCostGrowth**self.sword_master_level) 
                 / (SVM.playerUpgradeCostGrowth - 1))
 
@@ -257,7 +267,7 @@ class Player(object):
             # Updates the improvement bonus multiplier.
             sm_mult = sword_master.multipliers
             sm_level = sword_master.levels
-            self.sword_master_multiplier = (self.base_tap_mult
+            self.sword_master_mult = (self.base_tap_mult
                 * sm_mult[self.sword_master_level>=sm_level].max())
 
 
@@ -283,7 +293,8 @@ class Player(object):
 
         # Attempt to unlock heroes until all heroes are purchased.
         if (level.min()==0):
-            gold_check = self.current_gold>(1-self.cost_reduction)*heroes.purchase_cost
+            gold_check = (self.current_gold
+                > (1-self.cost_reduction)*heroes.purchase_cost)
 
             if (gold_check*(level==0)).any():
                 purchase_cost = ((1-self.cost_reduction)
@@ -309,12 +320,11 @@ class Player(object):
                 * (1-self.cost_reduction))
             level_cost[levels_to_buy==1] *= SVM.evolveCostMultiplier
 
-            if self.advanced_results:
-                # Store evolve levels for each hero.
-                evolve1_level_check = (self.evolve1_stage==0)*(level==1000)
-                evolve2_level_check = (self.evolve2_stage==0)*(level==2000)
-                self.evolve1_stage[evolve1_level_check] = self.stage
-                self.evolve2_stage[evolve2_level_check] = self.stage
+            # Store evolve levels for each hero.
+            evolve1_level_check = (self.evolve1_stage==0)*(level==1000)
+            evolve2_level_check = (self.evolve2_stage==0)*(level==2000)
+            self.evolve1_stage[evolve1_level_check] = self.stage
+            self.evolve2_stage[evolve2_level_check] = self.stage
 
             # Apply level gain.  (level_cost==0 implies levels_to_buy==0.)
             gold_check = self.current_gold>=level_cost
@@ -403,12 +413,9 @@ class Player(object):
             chest_gold = bm_tile[condition][chg_match].prod()
             titan_gold = bm_tile[condition][tg_match].prod()
             x10_chance = bm_tile[condition][tx_match].sum()
-            tap_damage = bm_tile[condition][td_match].sum()
+            tap_damage = bm_tile[condition][td_match].prod()
 
             # Combine skill bonuses from heroes with base values.
-            self.tap_from_hero = tap_from_hero
-            self.crit_damage = crit_damage
-            self.crit_chance = min(SVM.maxCritChance, self.base_crit_chance+crit_chance)
             self.boss_gold = self.base_boss_gold*boss_gold
             self.all_gold = self.base_all_gold*all_gold
             self.all_damage = self.base_all_damage*all_damage
@@ -421,6 +428,10 @@ class Player(object):
             self.titan_gold = self.base_titan_gold*titan_gold
             self.x10_gold_chance = self.base_x10_gold_chance+x10_chance
             self.tap_mult = self.base_tap_mult*tap_damage
+            self.tap_from_hero = tap_from_hero
+            self.crit_damage = crit_damage
+            self.crit_chance = min(SVM.maxCritChance, 
+                self.base_crit_chance+crit_chance)
 
     def calc_dps(self, heroes):
         # Update DPS only when heroes have been purchased or upgraded.
@@ -448,7 +459,7 @@ class Player(object):
 
             # Tap damage.
             self.sword_master_damage = (self.sword_master_level
-                * self.sword_master_multiplier*SVM.playerDamageMult
+                * self.sword_master_mult*SVM.playerDamageMult
                 * self.tap_mult*self.all_damage)
             self.tap_damage = (self.sword_master_damage
                 + self.tap_from_hero*self.total_hero_dps)
@@ -473,12 +484,11 @@ class Player(object):
                 + self.tap_dps + self.ship_damage/SVM.clanShipAttackRate 
                 + self.shadow_clone_dps)
             # Total Boss DPS: flash zip assumes two full zips are completed.
-            # Flash zip requires taps_sec>0.
             self.total_boss_dps = (self.total_dps 
-                + self.flash_zip*self.pet_damage_per_attack*(self.taps_sec>0))
+                + self.flash_zip*self.pet_damage_per_attack)
 
         # Store total DPS and pet attack damage per stage.
-        self.total_dps_array[self.stage] = self.total_dps
+        self.total_dps_array[self.stage] = self.total_dps, self.total_boss_dps
         self.hero_dps_array[self.stage] = self.total_hero_dps
         self.pet_attack_damage_array[self.stage] = self.pet_damage_per_attack
         self.tap_dps_array[self.stage] = self.tap_dps
@@ -492,8 +502,12 @@ class Player(object):
         stage and stores the values.  Note that 10x gold does not couple with
         HoM pot gold.  Additional HoM coins are not computed here since they are
         negligable compared to the pot bonus.  Overkills due to splash are
-        similarly not calculated since the gold gained per overkill multiplied
-        with the average overkill chance is negligible compared to boss gold.
+        similarly not calculated since the additional computational time to 
+        calculate this per stage is not worth the resulting negligible increase
+        in non-boss gold per stage. The bonus for TF is taken from the inactive
+        gold model in the game files.  While this matches the inactive model,
+        the form of the bonus is an overestimation of it's worth, so it should be
+        compensated by a reducing factor at some point (to be determined here).
         """
 
         # Average Titan gold per stage:
@@ -537,103 +551,141 @@ class Player(object):
     def finalize_results(self, data):
         """ Computes additional results after the sim has finished. """
 
-        stage = data.stage
-        heroes = data.heroes
-        
+        stage, heroes = data.stage, data.heroes
+
+        def performance_review(attack_duration, dps, use_zip):
+            """
+            Here we calculate attacks made and time spent on each stage, using
+            stored dps values from the simulation loop.  The use_zip option
+            allows flash_zip to be considered or disabled; the flash_zip section
+            below is equivalent to a normal boss fight when use_zip = 0. There
+            are two ratios below that are multiplied on the top and bottom by
+            1000; this seems silly but we do it to avoid floating point errors
+            due division of decimal representations.  zip_equivalent is used to
+            convert the number of pet attacks reduced by flash zip into the number
+            of input attacks reduced as per input dps.
+            """
+
+            attack_rate = 1/attack_duration
+            idx = (dps>0)*(stage.number<self.stage)
+
+            # Reduced Titan counts and equivalent attacks as per splash reduction.
+            attack_damage = dps[idx]/attack_rate
+            damage_splashed = np.maximum(0, 
+                attack_damage-stage.titan_hp[idx])*self.splash_damage
+            splash_factor = np.floor(np.minimum(3, 
+                damage_splashed/stage.titan_hp[idx]))+1
+            remaining_titans = np.ceil(stage.titan_count[idx]/splash_factor)
+            attacks_per_titan = (np.ceil(
+                 np.maximum(1, stage.titan_hp[idx]/attack_damage)))
+            # Boss attack counting.
+            attacks_required = np.ceil(stage.boss_hp[idx]
+                /attack_damage)
+            attacks_per_boss = np.zeros_like(attacks_required)
+            # Count attacks made before first zip occurs at 10sec.
+            flash_zip_delay = 10
+            attacks_before_delay = np.floor(flash_zip_delay*attack_rate)
+            attacks_per_boss = np.minimum(attacks_before_delay, attacks_required)
+            # Subtract the zip; Each zip level counts as zip_equivalent attacks.
+            zip_equivalent = use_zip*np.floor(15*self.flash_zip
+                * self.pet_attack_damage_array[idx]/attack_damage)
+            attacks_remaining = np.maximum(0, 
+                attacks_required-attacks_per_boss-zip_equivalent)
+            # Sum the remaining attacks up until the second zip at 30sec.
+            attacks_per_boss += np.minimum(attacks_remaining, 
+                2*attacks_before_delay)
+            attacks_remaining -= np.minimum(attacks_remaining, 
+                2*attacks_before_delay)
+            # Subtract second zip and sum remaining attacks.
+            attacks_per_boss += np.maximum(0, attacks_remaining-zip_equivalent)
+            # These account for rates that are smaller multiples of killAnimation.
+            n = np.maximum(1, np.floor(1000*SVM.killAnimationTime
+                /(1000*attacks_per_titan/attack_rate)))         
+            m = np.maximum(1, np.floor(1000*SVM.killAnimationTime
+                /(1000*attacks_per_boss/attack_rate)))
+            # These offset the first attack per stage as per killAnimationTime.
+            time_per_titan = np.abs(n*attacks_per_titan
+                / attack_rate-SVM.killAnimationTime)
+            time_per_boss = np.abs(m*attacks_per_boss
+                / attack_rate-SVM.killAnimationTime)
+            # Compute total times and attacks.
+            total_titan_time = (remaining_titans
+                * (time_per_titan+SVM.killAnimationTime))
+            total_boss_time = (time_per_boss + SVM.killAnimationTime)
+            total_attacks_per_stage = (attacks_per_titan
+                * remaining_titans+attacks_per_boss)
+            total_time_per_stage = total_titan_time+total_boss_time
+            return(total_attacks_per_stage, total_time_per_stage)
+
+        # Damage type dps for output display.
         self.melee_dps = self.hero_dps[heroes.melee_type].sum()
         self.spell_dps = self.hero_dps[heroes.spell_type].sum()
         self.ranged_dps = self.hero_dps[heroes.ranged_type].sum()
-       
-        dps = self.total_dps_array
 
-        # Stages clear durations (approximate).
-        for i, s in enumerate([1, 5, 15, 75]):
-            stage_duration = (stage.number[(dps>0)*((s*dps)
-                < (stage.titan_hp*stage.titan_count))])
+        # Transition Screen enjoyment.
+        transition_num = stage.transitions[self.start_stage:self.stage].sum()
+        transition_time = self.transition_delay*transition_num
+        self.trans_performance = transition_num, transition_time
 
-            if stage_duration.any():
-                self.stage_duration_stages[i] = stage_duration.min()
+        # Main Performance loop, calculate attacks and times of attack_durations.
+        for i, attack_duration in enumerate(self.attack_durations):
+            attack_dps = self.total_dps_array[:, 0]
+            attacks, times = performance_review(attack_duration, attack_dps, 1)
+            self.performance_attacks[i] = attacks.sum().astype(int)
+            self.performance_times[i] = np.round((times.sum()
+                + self.trans_performance[1])/60, 2)
 
-        # Count Pet Attacks (Not finished yet).
-        idx = (self.tap_with_avg_crit_array>0)*(stage.number<self.stage)
-        pet_damage = self.pet_attack_damage_array[idx]
-        damage_splashed = np.maximum(0, pet_damage-stage.titan_hp[idx])
-        splash_factor = np.floor(np.minimum(3, damage_splashed/stage.titan_hp[idx])+1)
-        remaining_titans = np.ceil(stage.titan_count[idx]/splash_factor)
-        # Boss attack counting is trickier since we need to account for Flash Zip.
-        boss_req_attacks = np.ceil(stage.boss_hp[idx]/pet_damage)
-        num_pet_attacks_no_zip = remaining_titans.sum() + boss_req_attacks.sum()
-        # We assume the Flash Zip damage is applied after 10 seconds.
-        boss_attacks = np.zeros_like(boss_req_attacks)
-        condition = boss_req_attacks<=(10*self.pet_rate)
-        boss_attacks[condition] = boss_req_attacks[condition]
-        boss_req_attacks[condition] = 0
-        # Count attacks that weren't counted in the previous step.
-        boss_attacks += (boss_req_attacks>(10*self.pet_rate))*10*self.pet_rate
-        # Subtract the Flash Zip bonus (each flash_zip level equals 150 pet attacks per sequence.)
-        boss_req_attacks = np.maximum(0, boss_req_attacks - 150*self.flash_zip)
-        # Sum the remaining attacks (I haven't put the second zip sequence in yet).
-        boss_attacks +=  boss_req_attacks
-        self.num_pet_attacks = boss_attacks + remaining_titans
+        # Pet Performance.
+        attack_dps = self.pet_attack_damage_array*self.pet_rate
+        attacks, times = performance_review(1/self.pet_rate, attack_dps, 1)
+        self.pet_performance[0] = attacks.sum().astype(int)
+        self.pet_performance[1] = np.round((times.sum()
+                + self.trans_performance[1])/60, 2)
 
-        # Minimum possible active time to finish a simulated run (Not finished yet).
-        num_bosses = idx.sum()
-        self.num_transitions = (np.mod(stage.number[idx], 5)==1).sum()
-        self.run_times[0] = 0.3*(2*num_bosses)+0.3*self.num_transitions
-        # Using transition screens and reduced Titan counts after splash (No TF yet).
-        minimum_titan_count = np.ceil(stage.titan_count/4).sum()
-        self.run_times[1] = self.num_transitions*self.transition_delay
-        # Using reduced titan count based on pet attacks at max kill rate and no zip.
-        self.run_times[2] = 0.7*(num_bosses+stage.titan_count[idx].sum()/(self.tf_bonus))
+        # Really important Heavenly Strike performance.
+        if self.heavenly_strike>1:
+            strike_duration = 5.5
+            strike_dps = (self.heavenly_strike
+                *self.tap_with_avg_crit_array/strike_duration)
+            attacks, times = performance_review(strike_duration, strike_dps, 0)
+            self.hs_performance[0] = attacks.sum()
+            self.hs_performance[1] = (times.sum()+self.trans_performance[1])/86400
 
+        # Record splash results.
+        damage_splashed = np.maximum(0, self.splash_damage
+            * (self.pet_attack_damage_array-stage.titan_hp))
+        self.splash_array = np.floor(damage_splashed/stage.titan_hp)
+
+        for i, n in enumerate([1, 2, 3, 19]):
+            max_splash = stage.number[self.splash_array>n]
+            if max_splash.any():
+                self.max_splash_stages[i] = max_splash.max()
+            cont_splash = stage.number[(self.splash_array>0)*(self.splash_array<n+1)]
+            if cont_splash.any():
+                self.continuous_splash_stages[i] = cont_splash.min()-1
+
+        """
         # Prestige Relic Efficiency (Not finished yet).
         base_relics = stage.relics[self.start_stage]
         total_attacks = 0
-        for i, attacks in enumerate(self.num_pet_attacks):
+        for i, attacks in enumerate(self.#removed):
             j = i + self.start_stage + 1
-            total_attacks += self.pet_rate*attacks+self.transition_delay*((j%5)==1)
+            total_attacks += self.pet_rate*attacks
             self.relic_efficiency[j, 0] = (stage.relics[j]-base_relics)/total_attacks
             self.relic_efficiency[j, 1] = stage.relics[j]/total_attacks
-
-        if self.advanced_results:
-            # Store splash results.
-            damage_splashed = ((self.pet_attack_damage_array - stage.titan_hp)
-                * self.splash_damage)
-
-            for i, n in enumerate([1, 2, 3, 19]):
-                # Maximum splash stages.
-                max_splash = damage_splashed>n*stage.titan_hp
-                if max_splash.any():
-                    self.max_splash_stages[i] = stage.number[max_splash].max()
-                # Continuous splash stages.
-                cont_splash = ((self.total_dps_array>0)*(damage_splashed<n*stage.titan_hp))
-                if cont_splash.any():
-                    self.continuous_splash_stages[i] = stage.number[cont_splash].min()-1
-
-            # Splash array of all max splash values.
-            for i in range(20):
-                self.splash_array[damage_splashed>(i+1)*stage.titan_hp] = (i+1)
-
-            # Really Important Heavenly Strike calc.
-            if self.heavenly_strike>1:
-                # We need to account for splash kills due to HS and adjust the titan count.
-                idx = (self.tap_with_avg_crit_array>0)*(stage.number<self.stage)
-                strike_damage = self.heavenly_strike*self.tap_with_avg_crit_array[idx]
-                damage_splashed = np.maximum(0, strike_damage-stage.titan_hp[idx])
-                splash_factor = np.floor(np.minimum(3, damage_splashed/stage.titan_hp[idx]))+1
-                remaining_titans = np.ceil(stage.titan_count[idx]/splash_factor).sum()
-                num_bosses = np.ceil(stage.boss_hp[idx]/strike_damage).sum()
-                # This should roughly give the number of required strikes.
-                self.num_strikes = (remaining_titans + num_bosses)
+        """
 
     def print_results(self, stage, silent_output):
         if silent_output: return
 
+        c1, c2 = (5, 8)
         print('\tGENERAL RESULTS:')
-        print('\t\tFinal Stage:'.ljust(12), (str(self.stage)+',').rjust(5),
-            ('Boss HP: '+letters(stage.boss_hp[self.stage], ',')).ljust(8),
-            ('Damage: '
-                + letters(self.total_boss_dps*self.boss_timer)).ljust(8))
+        print('\t\tFinal Stage:', str(self.stage).rjust(c1),
+            '\t\tBoss HP:',
+                letters(stage.boss_hp[self.stage]).rjust(c2))
+        print('\t\tStart Stage:', str(self.start_stage).rjust(c1),
+            '\t\tDamage: ',
+                letters(self.total_boss_dps*self.boss_timer).rjust(c2))
         print('\t\tHero Levels:', self.hero_level[:8],
             '\n\t\t\t\t\t', self.hero_level[8:16], 
             '\n\t\t\t\t\t', self.hero_level[16:24], 
@@ -719,76 +771,68 @@ class Player(object):
         print('\n\t\t*  No bonus with HoM.')
         print('\t\t** No bonus with HoM or Bosses.')
 
-        c1, c2, c3, c4 = (18, 3, 6, 4)
-        print('\n\tSTAGE COMPLETION TIMES (TITANS ONLY):')
-        print('\t\t 1 Second  Per Stage:'.ljust(c1),
-            'Stage =', str(self.stage_duration_stages[0]).rjust(c4))
-        print('\t\t 5 Seconds Per Stage:'.ljust(c1),
-            'Stage =', str(self.stage_duration_stages[1]).rjust(c4))
-        print('\t\t15 Seconds Per Stage:'.ljust(c1),
-            'Stage =', str(self.stage_duration_stages[2]).rjust(c4))
-        print('\t\t75 Seconds Per Stage:'.ljust(c1),
-            'Stage =', str(self.stage_duration_stages[3]).rjust(c4))
+        c1, c2, c3 = (5, 4, 4)
+        print('\n\tSPLASH RESULTS (PET ATTACKS):')
+        print('\t\tMaximum Splash Stage:'.ljust(27), 
+            '\tx20:'.ljust(c1), str(self.max_splash_stages[3]).rjust(c2),
+            '\tx4:'.ljust(c3), str(self.max_splash_stages[2]).rjust(c2), 
+            '\n', '\t'*8,
+            '\tx3:'.ljust(c1), str(self.max_splash_stages[1]).rjust(c2),
+            '\tx2:'.ljust(c3), str(self.max_splash_stages[0]).rjust(c2))
+        print('\t\tContinuous Splash Stage:'.ljust(27), 
+            '\tx20:'.ljust(c1), str(self.continuous_splash_stages[3]).rjust(c2),
+            '\tx4:'.ljust(c3), str(self.continuous_splash_stages[2]).rjust(c2), 
+            '\n', '\t'*8,
+            '\tx3:'.ljust(c1), str(self.continuous_splash_stages[1]).rjust(c2),
+            '\tx2:'.ljust(c3), str(self.continuous_splash_stages[0]).rjust(c2))
+        print('\t\tSplash Factor:', self.splash_damage)
 
-        if self.advanced_results:
+        print('\n\tHERO EVOLVE STAGES:')
+        print('\t\t1st Evolve: ', self.evolve1_stage[:8],
+            '\n\t\t\t\t\t', self.evolve1_stage[8:16], 
+            '\n\t\t\t\t\t', self.evolve1_stage[16:24], 
+            '\n\t\t\t\t\t', self.evolve1_stage[24:32], 
+            '\n\t\t\t\t\t', self.evolve1_stage[32:])
+        print('\t\t2nd Evolve: ', self.evolve2_stage[:8],
+            '\n\t\t\t\t\t', self.evolve2_stage[8:16], 
+            '\n\t\t\t\t\t', self.evolve2_stage[16:24], 
+            '\n\t\t\t\t\t', self.evolve2_stage[24:32], 
+            '\n\t\t\t\t\t', self.evolve2_stage[32:])
 
-            c1, c2, c3 = (5, 4, 4)
-            print('\n\tSPLASH RESULTS (PET ATTACKS):')
-            print('\t\tMaximum Splash Stage:'.ljust(27), 
-                '\tx20:'.ljust(c1), str(self.max_splash_stages[3]).rjust(c2),
-                '\tx4:'.ljust(c3), str(self.max_splash_stages[2]).rjust(c2), 
-                '\n', '\t'*8,
-                '\tx3:'.ljust(c1), str(self.max_splash_stages[1]).rjust(c2),
-                '\tx2:'.ljust(c3), str(self.max_splash_stages[0]).rjust(c2))
-            print('\t\tContinuous Splash Stage:'.ljust(27), 
-                '\tx20:'.ljust(c1), str(self.continuous_splash_stages[3]).rjust(c2),
-                '\tx4:'.ljust(c3), str(self.continuous_splash_stages[2]).rjust(c2), 
-                '\n', '\t'*8,
-                '\tx3:'.ljust(c1), str(self.continuous_splash_stages[1]).rjust(c2),
-                '\tx2:'.ljust(c3), str(self.continuous_splash_stages[0]).rjust(c2))
-            print('\t\tSplash Factor:', self.splash_damage)
-
-            print('\n\tHERO EVOLVE STAGES:')
-            print('\t\t1st Evolve: ', self.evolve1_stage[:8],
-                '\n\t\t\t\t\t', self.evolve1_stage[8:16], 
-                '\n\t\t\t\t\t', self.evolve1_stage[16:24], 
-                '\n\t\t\t\t\t', self.evolve1_stage[24:32], 
-                '\n\t\t\t\t\t', self.evolve1_stage[32:])
-            print('\t\t2nd Evolve: ', self.evolve2_stage[:8],
-                '\n\t\t\t\t\t', self.evolve2_stage[8:16], 
-                '\n\t\t\t\t\t', self.evolve2_stage[16:24], 
-                '\n\t\t\t\t\t', self.evolve2_stage[24:32], 
-                '\n\t\t\t\t\t', self.evolve2_stage[32:])
-
-            c1, c2, c3, c4 = (21, 7, 4, 6)
-            print('\n\tATTACKS AND TIMES TO REACH STAGE:', self.stage)
-            print('\t\tHeavenly Strikes:'.ljust(c1), 
-                letters(self.num_strikes).rjust(c2),
-                '\t\tTime Required:', 
-                str('%.2f'%(self.num_strikes*5/86400)).rjust(c4),'days')
-            if self.pet_rate>0:
-                pet_duration = (self.num_pet_attacks.sum()/self.pet_rate/60)
-                print('\t\tPet Attacks:'.ljust(c1), 
-                    letters(self.num_pet_attacks.sum()).rjust(c2),
-                    '\t\tTime Required:', 
-                    str('%.2f'%pet_duration).rjust(c4),'mins')
-            print('\t\tMinimum Possible:'.ljust(c1), 
-                letters(self.run_times[0]).rjust(c2),
-                '\t\tTime Required:', 
-                str('%.2f'%(self.run_times[0]/60)).rjust(c4),'mins')
-            print('\t\tTransition Screens:'.ljust(c1), 
-                letters(self.run_times[0]).rjust(c2),
-                '\t\tTime Wasted:  ', 
-                str('%.2f'%(self.run_times[1]/60)).rjust(c4),'mins')
+        c1, c2, c3, c4, c5 = (16, 8, 12, 8, 11)
+        print('\n\tATTACKS AND TIMES TO REACH STAGE:', self.stage)
+        print('\t\t'+'-'*(c1+c3+c5+3))
+        print('\t\tAttack Delay'.rjust(c1), 'Attacks'.rjust(c3),'\t',
+            'Time Required'.rjust(c5))
+        print('\t\t'+'-'*(c1+c3+c5+3))
+        for i, duration in enumerate(self.attack_durations):
+            print(('\t\t '+str(duration)+' sec').rjust(c1),
+                (letters(self.performance_attacks[i])).rjust(c3), 
+                (letters(self.performance_times[i])).rjust(c5), 'mins',
+                ('*' if duration==SVM.killAnimationTime else ''))
+        print('\t\t'+'-'*(c1+c3+c5+3))  
+        if self.hs_performance[0]:  
+            print('\t\tHeav. Strikes:'.ljust(c1), '\t',
+                letters(self.hs_performance[0]).rjust(c2),'\t',
+                str('%.2f'%self.hs_performance[1]).rjust(c4),'days')
+        if self.pet_performance[0]:
+            print('\t\tPet Attacks:'.ljust(c1), '\t',
+                letters(self.pet_performance[0]).rjust(c2),'\t',
+                str('%.2f'%(self.pet_performance[1])).rjust(c4),'mins')
+        print('\t\tTransitions:'.ljust(c1), '\t',
+            str(self.trans_performance[0]).rjust(c2),'\t',
+            str('%.2f'%(self.trans_performance[1]/60)).rjust(c4),'mins')
+        print('\t\t'+'-'*(c1+c3+c5+3))
+        print('\t\t* Monster Death Animation Delay:', SVM.killAnimationTime, 'sec')
       
 
-def run_simulation(input_csv, advanced_results=True, silent=False):
+def run_simulation(input_csv, silent=False):
 
     # Store all input and game data into single object.
     data = GameData(input_csv)
 
     # Initialize player object.
-    player = Player(data, advanced_results)
+    player = Player(data)
 
     # Max-stage simulation:
     while player.end_simulation is False:
@@ -804,9 +848,8 @@ def run_simulation(input_csv, advanced_results=True, silent=False):
     return (player, data.stage)
 
 if __name__ == '__main__':
-    player, stage = run_simulation('playerinput.csv')
+    player, stage = run_simulation('playerinput.csv', silent=False)
     #plot_results(player, stage)
     #plot_tap_damage(player, stage)
     #plot_dps(player, stage)
     #plot_splash(player, stage)
-    #plot_relics(player, stage)

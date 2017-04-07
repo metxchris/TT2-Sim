@@ -151,7 +151,3 @@ def plot_relics(player, stage):
         fillstyle='none')
     plt.tight_layout()
     plt.show()
-
-
-
-            

@@ -26,67 +26,78 @@ There is great potential for model analysis using TT2-Sim. A full overview of va
 
 ```
     GENERAL RESULTS:
-        Final Stage: 3570, Boss HP: 23.81ck, Damage: 17.54ck
+        Final Stage:  3775      Boss HP:   1.81co
+        Start Stage:  1000      Damage:    1.32co
         Hero Levels: [4000 4000 4000 4000 4000 4000 4000 4000] 
                      [4000 4000 4000 4000 4000 4000 4000 4000] 
                      [4000 4000 4000 4000 4000 4000 4000 4000] 
-                     [4000 4000 4000 4000 4000 4000 3650 3300] 
-                     [2960 2540 1999 1999 1999] Total: 138447
+                     [4000 4000 4000 4000 4000 4000 4000 3640] 
+                     [3300 2880 2380 2380 2380] Total: 140960
 
     DAMAGE RESULTS:
-        Total DPS:   53.15cj        All Bonus:    535.90aa%
-        Hero DPS:   164.08ch        Hero Bonus:    482.31M%
-        Melee DPS:  164.05ch        Melee Bonus:   908.63M%
-        Ranged DPS:  20.92cg        Ranged Bonus:   86.50k%
-        Spell DPS:   10.89cg        Spell Bonus:    60.22k%
-        Pet DMG:     53.15cj        Pet Bonus:      63.99M%
-        Tap DMG:      2.63ch        Tap Bonus:      45.60k%
-        Ship DMG:     1.64ci        Clan Bonus:      2.50T%
-        Crit Max:     148.00        Artifact:      348.61k%
-        Crit Min:      22.20        Crit Chance:     36.00%
+        Total DPS:    3.99cn        All Bonus:    651.39aa%
+        Hero DPS:     7.43cl        Hero Bonus:      7.44B%
+        Melee DPS:    7.43cl        Melee Bonus:   908.63M%
+        Ranged DPS: 944.45cj        Ranged Bonus:   86.50k%
+        Spell DPS:  493.36cj        Spell Bonus:    60.22k%
+        Pet DMG:      3.99cn        Pet Bonus:      63.99M%
+        Tap DMG:    118.93ck        Tap Bonus:      87.73k%
+        Ship DMG:    74.33cl        Clan Bonus:      3.04T%
+        Crit Max:     179.09        Artifact:      348.61k%
+        Crit Min:      26.86        Crit Chance:     50.00%
 
     GOLD RESULTS:
-        Total Earned:    2.44cn     Multiplier:    8.81k
-        Boss Gold:       2.43cn     Multiplier:   200.80
-        Chest Gold:     10.37cm     Multiplier:    24.42
-        Titan Gold:      1.84cm     Multiplier:    46.50
+        Total Earned:    2.21cr     Multiplier:    8.81k
+        Boss Gold:       2.21cr     Multiplier:   200.80
+        Chest Gold:      8.56cq     Multiplier:    24.42
+        Titan Gold:    483.14cp     Multiplier:    46.50
         10x Chance:      22.00%     Multiplier:     2.98  *
         TF Chance:        1.00%     Multiplier:     1.02  **
-        Remaining:       2.28cn     Spent:      160.49cm
+        Remaining:     452.18cq     Spent:        1.76cr
 
         *  No bonus with HoM.
         ** No bonus with HoM or Bosses.
 
-    STAGE COMPLETION TIMES (TITANS ONLY):
-         1 Second  Per Stage: Stage = 3469
-         5 Seconds Per Stage: Stage = 3520
-        15 Seconds Per Stage: Stage = 3547
-        75 Seconds Per Stage: Stage = 3560
-
     SPLASH RESULTS (PET ATTACKS):
-        Maximum Splash Stage:       x20: 3421   x4: 3473 
-                                    x3:  3476   x2: 3501
-        Continuous Splash Stage:    x20: 3364   x4: 3418 
-                                    x3:  3439   x2: 3464
+        Maximum Splash Stage:       x20: 3597   x4: 3630 
+                                    x3:  3633   x2: 3636
+        Continuous Splash Stage:    x20: 3499   x4: 3530 
+                                    x3:  3533   x2: 3536
         Splash Factor: 0.0504
 
     HERO EVOLVE STAGES:
-        1st Evolve:  [ 366  384  391  404  421  436  459  471] 
-                     [ 494  512  525  542  561  586  601  620] 
-                     [ 641  673  698  730  751  787  833  879] 
-                     [ 936 1023 1146 1304 1478 1686 1915 2140] 
-                     [2358 2631 2945 2945 2945]
-        2nd Evolve:  [1001 1015 1026 1043 1056 1071 1095 1110] 
-                     [1129 1147 1160 1179 1198 1225 1236 1258] 
-                     [1279 1310 1336 1369 1392 1426 1470 1519] 
-                     [1575 1663 1786 1941 2116 2325 2554 2780] 
-                     [2995 3269    0    0    0]
+        1st Evolve:  [1000 1000 1000 1000 1000 1000 1000 1000] 
+                     [1000 1000 1000 1000 1000 1000 1000 1000] 
+                     [1000 1000 1000 1000 1000 1000 1000 1001] 
+                     [1001 1005 1126 1283 1457 1661 1895 2120] 
+                     [2337 2611 2925 2925 2925]
+        2nd Evolve:  [1001 1002 1009 1020 1036 1051 1075 1090] 
+                     [1109 1126 1140 1159 1178 1203 1216 1238] 
+                     [1259 1289 1316 1348 1372 1406 1449 1498] 
+                     [1555 1643 1766 1921 2096 2305 2534 2760] 
+                     [2975 3249 3564 3564 3564]
 
-    ATTACKS AND TIMES TO REACH STAGE: 3570
-        Heavenly Strikes:    77.76k         Time Required:   4.50 days
-        Pet Attacks:          9.94k         Time Required: 165.70 mins
-        Minimum Possible:     2.36k         Time Required:  39.26 mins
-        Transition Screens:   2.36k         Time Wasted:    23.80 mins
+    ATTACKS AND TIMES TO REACH STAGE: 3775
+        ------------------------------------------
+        Attack Delay      Attacks    Time Required
+        ------------------------------------------
+             0.1 sec       65.77k      157.17 mins 
+             0.2 sec       37.25k      171.05 mins 
+             0.3 sec       27.75k      157.27 mins *
+             0.4 sec       22.99k      171.74 mins 
+             0.5 sec       20.18k      186.69 mins 
+             0.6 sec       18.18k      200.33 mins 
+             0.8 sec       15.82k      229.41 mins 
+             1.0 sec       14.44k      259.25 mins 
+             1.5 sec       12.46k      329.90 mins 
+             2.0 sec       11.54k      403.27 mins 
+             3.0 sec       10.53k      545.00 mins 
+        ------------------------------------------
+        Heav. Strikes:    317.74k       20.24 days
+        Pet Attacks:       14.44k      259.25 mins
+        Transitions:          555       18.50 mins
+        ------------------------------------------
+        * Monster Death Animation Delay: 0.3 sec
 ```
 
 # Credit
