@@ -800,7 +800,7 @@ class Player(object):
         c1, c2, c3, c4, c5 = (16, 8, 12, 8, 11)
         print('\n\tATTACKS AND TIMES TO REACH STAGE:', self.stage)
         print('\t\t'+'-'*(c1+c3+c5+3))
-        print('\t\tAttack Delay'.rjust(c1), 'Attacks'.rjust(c3),'\t',
+        print('\t\tInterval'.rjust(c1), 'Attacks'.rjust(c3),'\t',
             'Time Required'.rjust(c5))
         print('\t\t'+'-'*(c1+c3+c5+3))
         for i, duration in enumerate(self.attack_durations):

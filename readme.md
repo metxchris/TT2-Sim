@@ -28,10 +28,10 @@ There is great potential for model analysis using TT2-Sim. A full overview of va
     GENERAL RESULTS:
         Final Stage:  3775      Boss HP:   1.81co
         Start Stage:  1000      Damage:    1.32co
-        Hero Levels: [4000 4000 4000 4000 4000 4000 4000 4000]
-                     [4000 4000 4000 4000 4000 4000 4000 4000]
-                     [4000 4000 4000 4000 4000 4000 4000 4000]
-                     [4000 4000 4000 4000 4000 4000 4000 3640]
+        Hero Levels: [4000 4000 4000 4000 4000 4000 4000 4000] 
+                     [4000 4000 4000 4000 4000 4000 4000 4000] 
+                     [4000 4000 4000 4000 4000 4000 4000 4000] 
+                     [4000 4000 4000 4000 4000 4000 4000 3640] 
                      [3300 2880 2380 2380 2380] Total: 140960
 
     DAMAGE RESULTS:
@@ -59,9 +59,9 @@ There is great potential for model analysis using TT2-Sim. A full overview of va
         ** No bonus with HoM or Bosses.
 
     SPLASH RESULTS (PET ATTACKS):
-        Maximum Splash Stage:       x20: 3597   x4: 3630
+        Maximum Splash Stage:       x20: 3597   x4: 3630 
                                     x3:  3633   x2: 3636
-        Continuous Splash Stage:    x20: 3499   x4: 3530
+        Continuous Splash Stage:    x20: 3499   x4: 3530 
                                     x3:  3533   x2: 3536
         Splash Factor: 0.0504
 
@@ -79,7 +79,7 @@ There is great potential for model analysis using TT2-Sim. A full overview of va
 
     ATTACKS AND TIMES TO REACH STAGE: 3775
         ------------------------------------------
-        Attack Delay      Attacks    Time Required
+            Interval      Attacks    Time Required
         ------------------------------------------
              0.1 sec       65.77k      162.04 mins 
              0.2 sec       37.25k      175.92 mins 
