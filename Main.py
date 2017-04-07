@@ -48,6 +48,7 @@ TODO:
 1. Sci notation option (you heathens).
 2. Finish relic efficiency and add slider plot.
 3. Finish adding blue skill-tree skills.
+4. Silent March simulations.
 """
 
 class Player(object):

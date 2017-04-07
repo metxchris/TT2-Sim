@@ -81,8 +81,8 @@ There is great potential for model analysis using TT2-Sim. A full overview of va
         ------------------------------------------
         Attack Delay      Attacks    Time Required
         ------------------------------------------
-             0.1 sec       65.77k      157.17 mins 
-             0.2 sec       37.25k      171.05 mins 
+             0.1 sec       65.77k      162.04 mins 
+             0.2 sec       37.25k      175.92 mins 
              0.3 sec       27.75k      157.27 mins *
              0.4 sec       22.99k      171.74 mins 
              0.5 sec       20.18k      186.69 mins 
