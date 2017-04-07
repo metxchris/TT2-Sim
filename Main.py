@@ -35,7 +35,7 @@ Designed to run in Python 3.6+
     mana simulations.  The HoM skill deals damage equal to
     200*tap_with_average_crit once per skill activation, which
     is generally less than a single shadow clone strike, so this is
-    intentionally omitted.  The Critical Strike lightning skill could be 
+    intentionally omitted.  The Critical Strike lightning skill could be
     included if I were to derive a good model to approximate how much 
     damage it does on average per titan or boss. 
 
@@ -49,6 +49,7 @@ TODO:
 2. Finish relic efficiency and add slider plot.
 3. Finish adding blue skill-tree skills.
 4. Silent March simulations.
+5. Clean-up printed display
 """
 
 class Player(object):
@@ -75,7 +76,7 @@ class Player(object):
         # Store player input values.
         self.clan_level = max(input_values[input_type=='ClanLevel'][0], 1).astype(np.int)
         self.stage_cap = input_values[input_type=='StageCap'][0].astype(np.int)
-        self.start_stage = min(max(input_values[input_type=='StartStage'][0], 1), 
+        self.start_stage = min(max(input_values[input_type=='StartStage'][0], 1),
             self.stage_cap).astype(np.int)
         self.hero_cap = input_values[input_type=='HeroLevelCap'][0].astype(np.int)
         self.taps_sec = min(input_values[input_type=='TapsPerSec'][0], 20)
@@ -94,7 +95,7 @@ class Player(object):
         self.num_strikes = 0
 
         # Output performance arrays (attacks, duration).
-        self.attack_durations = ([0.1, 0.2, 0.3, 0.4, 0.5, 
+        self.attack_durations = ([0.1, 0.2, 0.3, 0.4, 0.5,
             0.6, 0.8, 1.0, 1.5, 2.0, 3.0])
         self.pet_performance = np.zeros(2, dtype=np.float)
         self.hs_performance = np.zeros(2, dtype=np.float)

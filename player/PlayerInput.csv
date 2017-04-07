@@ -18,17 +18,17 @@
         ,,
     EQUIPMENT MULTIPLIERS, (MULTIPLIER TYPE EQUIPPED),
         90,AllDamage, 
-        230,AllHeroDamage,equipped
+        230,AllHeroDamage,EQUIPPED
         153,CritDamage,
-        246,MeleeDamage,equipped
+        246,MeleeDamage,EQUIPPED
         232,SpellDamage,
         86,RangedDamage,
-        49,AllGold,equipped
+        49,AllGold,EQUIPPED
         65,ChestGold,
-        14,CritChance,equipped
+        14,CritChance,EQUIPPED
         0.29,TitanHP,
         15,ChestChance,
-        61,PetDamage,equipped
+        61,PetDamage,EQUIPPED
         86,TapDamage,
         ,,
     PET LEVELS, (LEVEL NAME ACTIVE),
@@ -40,7 +40,7 @@
         37,Bubbles,
         30,Demos,
         27,Tempest,
-        24,Basky,active
+        24,Basky,ACTIVE
         25,Scraps,
         19,Zero,
         35,Polly,
