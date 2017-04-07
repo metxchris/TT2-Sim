@@ -5,7 +5,6 @@ from copy import deepcopy
 from Classes import GameData, letters
 from Plotting import *
 from ServerVarsModel import SVM
-from fractions import Fraction
 
 """
 TT2-Sim by MetxChris.
@@ -46,11 +45,9 @@ Designed to run in Python 3.6+
 
 
 TODO:
-1. Add Equipment CSV, test if works (it doesn't).
-2. Sci notation option (you heathens).
-3. Create new class to organize bonuses.
-4. Finish relic efficiency and add slider plot.
-5. Finish adding blue skill-tree skills.
+1. Sci notation option (you heathens).
+2. Finish relic efficiency and add slider plot.
+3. Finish adding blue skill-tree skills.
 """
 
 class Player(object):
@@ -355,7 +352,8 @@ class Player(object):
         Known Accuracy Issues:
         1. There is no gold-check for hero skill multipliers.  Skill upgrade
         costs aren't that expensive and getting a skill like 1.1x all damage
-        a stage early won't make much of a difference.
+        a stage early won't make much of a difference.  The game also gives 
+        these out for free for each hero that has a weapon upgrade.
         """
 
         if self.heroes_bought:
@@ -553,7 +551,7 @@ class Player(object):
 
         stage, heroes = data.stage, data.heroes
 
-        def performance_review(attack_duration, dps, use_zip):
+        def performance_analysis(attack_duration, dps, use_zip):
             """
             Here we calculate attacks made and time spent on each stage, using
             stored dps values from the simulation loop.  The use_zip option
@@ -563,7 +561,7 @@ class Player(object):
             1000; this seems silly but we do it to avoid floating point errors
             due division of decimal representations.  zip_equivalent is used to
             convert the number of pet attacks reduced by flash zip into the number
-            of input attacks reduced as per input dps.
+            of input attacks reduced as per input dps.  
             """
 
             attack_rate = 1/attack_duration
@@ -598,22 +596,20 @@ class Player(object):
                 2*attacks_before_delay)
             # Subtract second zip and sum remaining attacks.
             attacks_per_boss += np.maximum(0, attacks_remaining-zip_equivalent)
-            # These account for rates that are smaller multiples of killAnimation.
-            n = np.maximum(1, np.floor(1000*SVM.killAnimationTime
-                /(1000*attacks_per_titan/attack_rate)))         
-            m = np.maximum(1, np.floor(1000*SVM.killAnimationTime
-                /(1000*attacks_per_boss/attack_rate)))
-            # These offset the first attack per stage as per killAnimationTime.
-            time_per_titan = np.abs(n*attacks_per_titan
-                / attack_rate-SVM.killAnimationTime)
-            time_per_boss = np.abs(m*attacks_per_boss
-                / attack_rate-SVM.killAnimationTime)
+            # Attack times with an offset for the first attack made vs. each monster.
+            first_attack_delay = (np.maximum(1, 
+                np.ceil(SVM.killAnimationTime*attack_rate))/attack_rate
+                - SVM.killAnimationTime)      
+            time_per_titan = np.abs(first_attack_delay
+                + (attacks_per_titan-1)/attack_rate)
+            time_per_boss = np.abs(first_attack_delay  
+                + (attacks_per_boss-1)/attack_rate)
             # Compute total times and attacks.
             total_titan_time = (remaining_titans
                 * (time_per_titan+SVM.killAnimationTime))
             total_boss_time = (time_per_boss + SVM.killAnimationTime)
             total_attacks_per_stage = (attacks_per_titan
-                * remaining_titans+attacks_per_boss)
+                * remaining_titans + attacks_per_boss)
             total_time_per_stage = total_titan_time+total_boss_time
             return(total_attacks_per_stage, total_time_per_stage)
 
@@ -630,14 +626,14 @@ class Player(object):
         # Main Performance loop, calculate attacks and times of attack_durations.
         for i, attack_duration in enumerate(self.attack_durations):
             attack_dps = self.total_dps_array[:, 0]
-            attacks, times = performance_review(attack_duration, attack_dps, 1)
+            attacks, times = performance_analysis(attack_duration, attack_dps, 1)
             self.performance_attacks[i] = attacks.sum().astype(int)
             self.performance_times[i] = np.round((times.sum()
                 + self.trans_performance[1])/60, 2)
 
         # Pet Performance.
         attack_dps = self.pet_attack_damage_array*self.pet_rate
-        attacks, times = performance_review(1/self.pet_rate, attack_dps, 1)
+        attacks, times = performance_analysis(1/self.pet_rate, attack_dps, 1)
         self.pet_performance[0] = attacks.sum().astype(int)
         self.pet_performance[1] = np.round((times.sum()
                 + self.trans_performance[1])/60, 2)
@@ -647,7 +643,7 @@ class Player(object):
             strike_duration = 5.5
             strike_dps = (self.heavenly_strike
                 *self.tap_with_avg_crit_array/strike_duration)
-            attacks, times = performance_review(strike_duration, strike_dps, 0)
+            attacks, times = performance_analysis(strike_duration, strike_dps, 0)
             self.hs_performance[0] = attacks.sum()
             self.hs_performance[1] = (times.sum()+self.trans_performance[1])/86400
 
