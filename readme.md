@@ -78,25 +78,25 @@ There is great potential for model analysis using TT2-Sim. A full overview of va
                      [2975 3249 3564 3564 3564]
 
     ATTACKS AND TIMES TO REACH STAGE: 3775
-        ------------------------------------------
-            Interval      Attacks    Time Required
-        ------------------------------------------
-             0.1 sec       65.77k      162.04 mins 
-             0.2 sec       37.25k      175.92 mins 
-             0.3 sec       27.75k      157.27 mins *
-             0.4 sec       22.99k      171.74 mins 
-             0.5 sec       20.18k      186.69 mins 
-             0.6 sec       18.18k      200.33 mins 
-             0.8 sec       15.82k      229.41 mins 
-             1.0 sec       14.44k      259.25 mins 
-             1.5 sec       12.46k      329.90 mins 
-             2.0 sec       11.54k      403.27 mins 
-             3.0 sec       10.53k      545.00 mins 
-        ------------------------------------------
-        Heav. Strikes:    317.74k       20.24 days
-        Pet Attacks:       14.44k      259.25 mins
-        Transitions:          555       18.50 mins
-        ------------------------------------------
+        ---------------------------------------------
+        Attack Interval      Attacks    Time Required
+        ---------------------------------------------
+                0.1 sec       65.77k      162.04 mins 
+                0.2 sec       37.25k      175.92 mins 
+                0.3 sec       27.75k      157.27 mins *
+                0.4 sec       22.99k      171.74 mins 
+                0.5 sec       20.18k      186.69 mins 
+                0.6 sec       18.18k      200.33 mins 
+                0.8 sec       15.82k      229.41 mins 
+                1.0 sec       14.44k      259.25 mins 
+                1.5 sec       12.46k      329.90 mins 
+                2.0 sec       11.54k      403.27 mins 
+                3.0 sec       10.53k      545.00 mins 
+        ---------------------------------------------
+        Heav. Strikes:       317.74k       20.24 days
+        Pet Attacks:          14.44k      259.25 mins
+        Transitions:             555       18.50 mins
+        ---------------------------------------------
         * Monster Death Animation Delay: 0.3 sec
 ```
 

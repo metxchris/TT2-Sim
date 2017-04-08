@@ -49,7 +49,7 @@ TODO:
 2. Finish relic efficiency and add slider plot.
 3. Finish adding blue skill-tree skills.
 4. Silent March simulations.
-5. Clean-up printed display
+5. Build function to print tables better.
 """
 
 class Player(object):
@@ -797,30 +797,31 @@ class Player(object):
             '\n\t\t\t\t\t', self.evolve2_stage[24:32], 
             '\n\t\t\t\t\t', self.evolve2_stage[32:])
 
-        c1, c2, c3, c4, c5 = (16, 8, 12, 8, 11)
+        c1, c2, c3, c4, c5 = (18, 9, 12, 13, 16)
         print('\n\tATTACKS AND TIMES TO REACH STAGE:', self.stage)
-        print('\t\t'+'-'*(c1+c3+c5+3))
-        print('\t\tInterval'.rjust(c1), 'Attacks'.rjust(c3),'\t',
+        print('\t\t'+'-'*(c1+c3+c5-1))
+        print('\t\tAttack Interval'.rjust(c1), 
+            'Attacks'.rjust(c3),
             'Time Required'.rjust(c5))
-        print('\t\t'+'-'*(c1+c3+c5+3))
+        print('\t\t'+'-'*(c1+c3+c5-1))
         for i, duration in enumerate(self.attack_durations):
-            print(('\t\t '+str(duration)+' sec').rjust(c1),
-                (letters(self.performance_attacks[i])).rjust(c3), 
-                (letters(self.performance_times[i])).rjust(c5), 'mins',
+            print(('\t\t'+str(duration)+' sec').rjust(c1),
+                letters(self.performance_attacks[i]).rjust(c3), 
+                letters(self.performance_times[i]).rjust(c5-5), 'mins',
                 ('*' if duration==SVM.killAnimationTime else ''))
-        print('\t\t'+'-'*(c1+c3+c5+3))  
+        print('\t\t'+'-'*(c1+c3+c5-1))  
         if self.hs_performance[0]:  
-            print('\t\tHeav. Strikes:'.ljust(c1), '\t',
-                letters(self.hs_performance[0]).rjust(c2),'\t',
-                str('%.2f'%self.hs_performance[1]).rjust(c4),'days')
+            print('\t\t'+'Heav. Strikes:'.ljust(c1),
+                letters(self.hs_performance[0]).rjust(c2),
+                str('%.2f'%self.hs_performance[1]).rjust(c5-5),'days')
         if self.pet_performance[0]:
-            print('\t\tPet Attacks:'.ljust(c1), '\t',
-                letters(self.pet_performance[0]).rjust(c2),'\t',
-                str('%.2f'%(self.pet_performance[1])).rjust(c4),'mins')
-        print('\t\tTransitions:'.ljust(c1), '\t',
-            str(self.trans_performance[0]).rjust(c2),'\t',
-            str('%.2f'%(self.trans_performance[1]/60)).rjust(c4),'mins')
-        print('\t\t'+'-'*(c1+c3+c5+3))
+            print('\t\t'+'Pet Attacks:'.ljust(c1), 
+                letters(self.pet_performance[0]).rjust(c2),
+                str('%.2f'%(self.pet_performance[1])).rjust(c5-5),'mins')
+        print('\t\t'+'Transitions:'.ljust(c1),
+            str(self.trans_performance[0]).rjust(c2),
+            str('%.2f'%(self.trans_performance[1]/60)).rjust(c5-5),'mins')
+        print('\t\t'+'-'*(c1+c3+c5-1))
         print('\t\t* Monster Death Animation Delay:', SVM.killAnimationTime, 'sec')
       
 
