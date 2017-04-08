@@ -162,7 +162,10 @@ class Player(object):
 
         # War Cry Skill Tree Boost (This boosts avg DPS but not displayed DPS)
         # Heroes have 10% chance to crit during WC with Heroic Might.
-        self.war_cry_talent = 0.9 + 0.1*skill_tree.wc_bonus
+        if (skill_tree.wc_bonus and self.war_cry>1):
+            self.war_cry_talent = 0.9+0.1*skill_tree.wc_bonus
+        else:
+            self.war_cry_talent = 1
 
         # Additive skill-tree bonuses.
         if self.heavenly_strike>1:
@@ -634,11 +637,12 @@ class Player(object):
                 + self.trans_performance[1])/60, 2)
 
         # Pet Performance.
-        attack_dps = self.pet_attack_damage_array*self.pet_rate
-        attacks, times = performance_analysis(1/self.pet_rate, attack_dps, 1)
-        self.pet_performance[0] = attacks.sum().astype(int)
-        self.pet_performance[1] = np.round((times.sum()
-                + self.trans_performance[1])/60, 2)
+        if self.pet_rate:
+            attack_dps = self.pet_attack_damage_array*self.pet_rate
+            attacks, times = performance_analysis(1/self.pet_rate, attack_dps, 1)
+            self.pet_performance[0] = attacks.sum().astype(int)
+            self.pet_performance[1] = np.round((times.sum()
+                    + self.trans_performance[1])/60, 2)
 
         # Really important Heavenly Strike performance.
         if self.heavenly_strike>1:
@@ -823,7 +827,6 @@ class Player(object):
             str('%.2f'%(self.trans_performance[1]/60)).rjust(c5-5),'mins')
         print('\t\t'+'-'*(c1+c3+c5-1))
         print('\t\t* Monster Death Animation Delay:', SVM.killAnimationTime, 'sec')
-      
 
 def run_simulation(input_csv, silent=False):
 
