@@ -886,7 +886,7 @@ def run_simulation(input_csv, silent=False):
 
 if __name__ == '__main__':
     player, stage = run_simulation('playerinput.csv')
-    plot_dps_vs_bosshp(player, stage)
-    plot_tap_damage(player, stage)
-    plot_dps(player, stage)
-    plot_splash(player, stage)
+    #plot_dps_vs_bosshp(player, stage)
+    #plot_tap_damage(player, stage)
+    #plot_dps(player, stage)
+    #plot_splash(player, stage)
