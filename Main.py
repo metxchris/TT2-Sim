@@ -346,7 +346,6 @@ class Player(object):
             # Flag if hero levels were bought.
             if keep_buying:
                 self.heroes_bought = True
-
                 # Spend gold on strongest hero level cost only.
                 strongest_hero_cost = level_cost[level>0][-1]
                 if (self.current_gold>=strongest_hero_cost):
@@ -608,8 +607,9 @@ class Player(object):
             # attacks after the 2nd zip for goofy calculations like Heavenly Strike.
             attacks_per_boss += np.maximum(0, attacks_remaining-zip_equivalent)
             # Attack times with an offset for the first attack made vs. each monster.
-            first_attack_delay = (np.maximum(1, 
-                np.ceil(SVM.killAnimationTime*attack_rate))*attack_duration
+            # I still have this wrong, need to fix for durations<animationTime.
+            first_attack_delay = np.abs(np.maximum(1, 
+                np.ceil(SVM.killAnimationTime*attack_rate))/attack_rate
                 - SVM.killAnimationTime)      
             time_per_titan = (first_attack_delay
                 + (attacks_per_titan-1)*attack_duration)
@@ -650,6 +650,12 @@ class Player(object):
             self.pet_performance[0] = attacks.sum().astype(int)
             self.pet_performance[1] = np.round((times.sum()
                     + self.trans_performance[1])/60, 2)
+
+        # Tap Performance
+        if self.taps_sec:
+            attacks, times = performance_analysis(1/self.taps_sec, self.tap_dps_array, 0)
+            self.tap_performance[0] = attacks.sum()
+            self.tap_performance[1] = (times.sum()+self.trans_performance[1])/86400
 
         # Really important Heavenly Strike performance.
         if self.heavenly_strike>1:
@@ -794,7 +800,6 @@ class Player(object):
         print(hline)
         print('\t\u2020 Does not multiply with HoM or Bosses.')
         print('\t\u2021 Does not multiply with HoM.')
-        
 
         c1, c2, c3 = (13, 17, 20)
         hline = '\t'+'-'*(c1+c2+c3+2)
@@ -839,6 +844,10 @@ class Player(object):
                 letters(self.performance_times[i]).rjust(c3-5), 'mins'
                 + (' \u2020' if duration==SVM.killAnimationTime else ''))
         print(hline)  
+        if self.tap_performance[0]:
+            print('\t'+'Tap Attacks:'.ljust(c1), 
+                letters(self.tap_performance[0]).rjust(c2),
+                str('%.2f'%(self.tap_performance[1])).rjust(c3-5),'days')
         if self.hs_performance[0]:  
             print('\t'+'Heav. Strikes:'.ljust(c1),
                 letters(self.hs_performance[0]).rjust(c2),
@@ -851,7 +860,8 @@ class Player(object):
             str(self.trans_performance[0]).rjust(c2),
             str('%.2f'%(self.trans_performance[1]/60)).rjust(c3-5),'mins')
         print(hline)
-        print('\t\u2020 Monster Death Animation Delay:', SVM.killAnimationTime, 'sec')
+        print('\t\u2020 Monster Death Animation Delay:',
+            SVM.killAnimationTime, 'sec')
 
 def run_simulation(input_csv, silent=False):
 
@@ -876,7 +886,7 @@ def run_simulation(input_csv, silent=False):
 
 if __name__ == '__main__':
     player, stage = run_simulation('playerinput.csv')
-    #plot_results(player, stage)
-    #plot_tap_damage(player, stage)
-    #plot_dps(player, stage)
-    #plot_splash(player, stage)
+    plot_dps_vs_bosshp(player, stage)
+    plot_tap_damage(player, stage)
+    plot_dps(player, stage)
+    plot_splash(player, stage)
