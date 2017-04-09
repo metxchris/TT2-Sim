@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 """
 The plotting functions aren't as well kept as the main simulation, 
-and some may break as I continue to make changes.
+and some may break as I continue to make changes.  
 """
 
 def plot_dps_vs_bosshp(player, stage):

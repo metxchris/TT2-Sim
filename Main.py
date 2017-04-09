@@ -607,7 +607,6 @@ class Player(object):
             # attacks after the 2nd zip for goofy calculations like Heavenly Strike.
             attacks_per_boss += np.maximum(0, attacks_remaining-zip_equivalent)
             # Attack times with an offset for the first attack made vs. each monster.
-            # I still have this wrong, need to fix for durations<animationTime.
             first_attack_delay = np.abs(np.maximum(1, 
                 np.ceil(SVM.killAnimationTime*attack_rate))/attack_rate
                 - SVM.killAnimationTime)      
