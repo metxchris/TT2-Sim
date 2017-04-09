@@ -26,78 +26,103 @@ There is great potential for model analysis using TT2-Sim. A full overview of va
 
 ```
     GENERAL RESULTS:
-        Final Stage:  3775      Boss HP:   1.81co
-        Start Stage:  1000      Damage:    1.32co
-        Hero Levels: [4000 4000 4000 4000 4000 4000 4000 4000] 
-                     [4000 4000 4000 4000 4000 4000 4000 4000] 
-                     [4000 4000 4000 4000 4000 4000 4000 4000] 
-                     [4000 4000 4000 4000 4000 4000 4000 3640] 
-                     [3300 2880 2380 2380 2380] Total: 140960
+    -----------------------------------------
+    Final Stage: 3770       Boss HP: 982.84cn
+    Start Stage: 1550       Damage:  637.18cn
+    ------------------------------------------------------
+    Hero Levels: [4000 4000 4000 4000 4000 4000 4000 4000] 
+                 [4000 4000 4000 4000 4000 4000 4000 4000] 
+                 [4000 4000 4000 4000 4000 4000 4000 4000] 
+                 [4000 4000 4000 4000 4000 4000 3960 3600] 
+                 [3260 2840 2340 2340 2340] Total: 140680
+
 
     DAMAGE RESULTS:
-        Total DPS:    3.99cn        All Bonus:    651.39aa%
-        Hero DPS:     7.43cl        Hero Bonus:      7.44B%
-        Melee DPS:    7.43cl        Melee Bonus:   908.63M%
-        Ranged DPS: 944.45cj        Ranged Bonus:   86.50k%
-        Spell DPS:  493.36cj        Spell Bonus:    60.22k%
-        Pet DMG:      3.99cn        Pet Bonus:      63.99M%
-        Tap DMG:    118.93ck        Tap Bonus:      87.73k%
-        Ship DMG:    74.33cl        Clan Bonus:      3.04T%
-        Crit Max:     179.09        Artifact:      348.61k%
-        Crit Min:      26.86        Crit Chance:     50.00%
+    ---------------------------------------
+    Type            Amount        Bonus    
+    ---------------------------------------
+    Total DPS          2.50cn       8.51ab%
+    Hero DPS           2.71cl        1.78B%
+    Melee DPS          2.71cl        1.19B%
+    Ranged DPS       619.29cj      202.89k%
+    Spell DPS:       336.26cj      110.12k%
+    Pet DMG:           1.87cn       90.28M%
+    Tap DMG:          43.42ck      212.17k%
+    Clan DMG:         27.14cl        3.04T%
+    ---------------------------------------
+    Crit Chance:                     50.00%
+    Crit Max:          162.81
+    Crit Min:           24.42
+    ---------------------------------------
+    Artifact:                      377.07k%
+
 
     GOLD RESULTS:
-        Total Earned:    2.21cr     Multiplier:    8.81k
-        Boss Gold:       2.21cr     Multiplier:   200.80
-        Chest Gold:      8.56cq     Multiplier:    24.42
-        Titan Gold:    483.14cp     Multiplier:    46.50
-        10x Chance:      22.00%     Multiplier:     2.98  *
-        TF Chance:        1.00%     Multiplier:     1.02  **
-        Remaining:     452.18cq     Spent:        1.76cr
+    ---------------------------------------
+    Type             Amount      Multiplier
+    ---------------------------------------
+    Total Earned     123.36cq        10.75k
+    Boss Gold        122.37cq        200.80
+    Chest Gold       871.31cp         40.70
+    Titan Gold       115.88cp         58.13
+    TF Chance           1.00%          1.02 †
+    10x Chance         22.00%          2.98 ‡
+    ---------------------------------------
+    Remaining         48.03cq
+    Spent             75.33cq
+    ---------------------------------------
+    † Does not multiply with HoM or Bosses.
+    ‡ Does not multiply with HoM.
 
-        *  No bonus with HoM.
-        ** No bonus with HoM or Bosses.
 
-    SPLASH RESULTS (PET ATTACKS):
-        Maximum Splash Stage:       x20: 3597   x4: 3630 
-                                    x3:  3633   x2: 3636
-        Continuous Splash Stage:    x20: 3499   x4: 3530 
-                                    x3:  3533   x2: 3536
-        Splash Factor: 0.0504
+    SPLASH RESULTS BY STAGE (PET ATTACKS):
+    ----------------------------------------------------
+    Splash Amount    Maximum Splash    Continuous Splash
+    ----------------------------------------------------
+              x20              3613                 3515
+               x4              3645                 3545
+               x3              3646                 3546
+               x2              3649                 3549
+               x1              3652                 3552
+    ----------------------------------------------------
+    Splash Factor: 0.0636
+
 
     HERO EVOLVE STAGES:
-        1st Evolve:  [1000 1000 1000 1000 1000 1000 1000 1000] 
-                     [1000 1000 1000 1000 1000 1000 1000 1000] 
-                     [1000 1000 1000 1000 1000 1000 1000 1001] 
-                     [1001 1005 1126 1283 1457 1661 1895 2120] 
-                     [2337 2611 2925 2925 2925]
-        2nd Evolve:  [1001 1002 1009 1020 1036 1051 1075 1090] 
-                     [1109 1126 1140 1159 1178 1203 1216 1238] 
-                     [1259 1289 1316 1348 1372 1406 1449 1498] 
-                     [1555 1643 1766 1921 2096 2305 2534 2760] 
-                     [2975 3249 3564 3564 3564]
+    ------------------------------------------------------
+    1st Evolve:  [1550 1550 1550 1550 1550 1550 1550 1550] 
+                 [1550 1550 1550 1550 1550 1550 1550 1550] 
+                 [1550 1550 1550 1550 1550 1550 1550 1550] 
+                 [1550 1550 1550 1550 1551 1685 1913 2139] 
+                 [2356 2630 2943 2943 2943]
+    2nd Evolve:  [1550 1550 1550 1550 1550 1550 1550 1550] 
+                 [1550 1550 1550 1550 1550 1550 1550 1550] 
+                 [1550 1550 1550 1550 1550 1550 1551 1551] 
+                 [1574 1661 1785 1940 2114 2324 2552 2778] 
+                 [2994 3267 3583 3583 3583]
 
-    ATTACKS AND TIMES TO REACH STAGE: 3775
-        ---------------------------------------------
-        Attack Interval      Attacks    Time Required
-        ---------------------------------------------
-                0.1 sec       65.77k      162.04 mins 
-                0.2 sec       37.25k      175.92 mins 
-                0.3 sec       27.75k      157.27 mins *
-                0.4 sec       22.99k      171.74 mins 
-                0.5 sec       20.18k      186.69 mins 
-                0.6 sec       18.18k      200.33 mins 
-                0.8 sec       15.82k      229.41 mins 
-                1.0 sec       14.44k      259.25 mins 
-                1.5 sec       12.46k      329.90 mins 
-                2.0 sec       11.54k      403.27 mins 
-                3.0 sec       10.53k      545.00 mins 
-        ---------------------------------------------
-        Heav. Strikes:       317.74k       20.24 days
-        Pet Attacks:          14.44k      259.25 mins
-        Transitions:             555       18.50 mins
-        ---------------------------------------------
-        * Monster Death Animation Delay: 0.3 sec
+
+    ATTACKS AND TIMES TO REACH STAGE: 3770
+    -------------------------------------------
+    Attack Interval    Attacks    Time Required
+    -------------------------------------------
+            0.1 sec     42.71k      115.47 mins
+            0.2 sec     25.16k      127.45 mins
+            0.3 sec     19.24k      111.00 mins †
+            0.4 sec     16.32k      123.61 mins
+            0.5 sec     14.57k      136.22 mins
+            0.6 sec     13.35k      148.29 mins
+            0.8 sec     11.90k      173.51 mins
+            1.0 sec     11.02k      198.48 mins
+            1.5 sec      9.79k      259.65 mins
+            2.0 sec      9.22k      322.07 mins
+            3.0 sec      8.60k      444.60 mins
+    -------------------------------------------
+    Heav. Strikes:     345.78k       22.02 days
+    Pet Attacks:        12.21k      167.40 mins
+    Transitions:           444       14.80 mins
+    -------------------------------------------
+    † Monster Death Animation Delay: 0.3 sec
 ```
 
 # Credit

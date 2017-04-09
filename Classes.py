@@ -364,8 +364,6 @@ class SkillTree(object):
         self.flash_zip = self.effect[self.attributes=='BossDmgQTE'][0]
         self.boss_timer = self.effect[self.attributes=='BossTimer'][0]
         self.tf_chance = self.effect[self.attributes=='MultiMonsters'][0]
-        
-
 
     def print_info(self):
         print('')
@@ -415,7 +413,8 @@ class Stage(object):
         self.titan_count = np.maximum(1, 
             (10 + np.minimum(np.floor(self.number/1000)*4, 20))-ip_level).astype(np.int)
 
-        # The player.all_gold multiplier is applied when monsters are killed.
+        # The player.all_gold multiplier is supposed to be here, but we will
+        # apply it as monsters are killed.
         self.base_titan_gold = (self.titan_hp*SVM.monsterGoldMultiplier
             + SVM.monsterGoldSlope*np.minimum(self.number, SVM.noMoreMonsterGoldSlope))
         self.base_titan_gold[0] = 30 # Ensures enough starting gold to purchase first hero.
@@ -424,7 +423,8 @@ class Stage(object):
         self.base_boss_gold[0] = 30 # Ensures enough starting gold to purchase first hero.
 
         BOS_mult = artifacts.effect[artifacts.name=='Book of Shadows']
-        self.relics = (BOS_mult*((np.maximum(0, self.number - 75) / 14)**1.75)).astype(np.int)
+        self.relics = (BOS_mult*((np.maximum(0, self.number - 75)
+            / 14)**1.75)).astype(np.int)
 
         self.transitions = np.zeros_like(self.number)
         self.transitions[0::5] =  1
@@ -432,8 +432,12 @@ class Stage(object):
     def print_info(self, stage_skip_factor):
         # Print to screen all values of every stage_skip_factor stages.
         print('')
-        print('STAGE'.rjust(5), '\t'+'TITAN HP'.rjust(10), '\t'+'BOSS HP'.rjust(10),
-            '\t'+'BASE GOLD'.rjust(10), '\t'+'TITAN #'.rjust(7), '\t'+'RELICS'.rjust(7))
+        print('STAGE'.rjust(5),
+            '\t'+'TITAN HP'.rjust(10),
+            '\t'+'BOSS HP'.rjust(10),
+            '\t'+'BASE GOLD'.rjust(10),
+            '\t'+'TITAN #'.rjust(7),
+            '\t'+'RELICS'.rjust(7))
         for i in range(1, int(self.cap/stage_skip_factor)+1):
             print(str(i*stage_skip_factor).rjust(5),
                 '\t'+letters(self.titan_hp[i*stage_skip_factor]).rjust(10),
