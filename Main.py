@@ -105,6 +105,7 @@ class Player(object):
         self.device_lag = get_input('DeviceLag') + 0.01
         self.disable_heroes = get_input('DisableHeroes')
         self.disable_pet = get_input('DisablePet')
+        self.username = data.username
 
         # Misc calculations.
         self.evolve1_stage = np.zeros_like(heroes.level)
@@ -118,7 +119,6 @@ class Player(object):
         self.pet_performance = np.zeros(3, dtype=np.float)
         self.hs_performance = np.zeros(3, dtype=np.float)
         self.tap_performance = np.zeros(3, dtype=np.float)
-        self.trans_performance = np.zeros(2, dtype=np.float)
 
         # Initialize Default Values.
         self.hero_level = heroes.level
@@ -172,9 +172,9 @@ class Player(object):
         # set to max because it isn't used in any DPS calculations.
         self.heavenly_strike = max(1, max(15, active_skills.effects[0])
             * artifacts.hs_bonus)
-        self.crit_strike = active_skills.effects[1]/100
-        self.fire_sword = max(1, active_skills.effects[2]*artifacts.fs_bonus)
-        self.hom = active_skills.effects[3]*artifacts.hom_bonus
+        self.crit_strike = active_skills.effects[1]
+        self.hom = active_skills.effects[2]*artifacts.hom_bonus
+        self.fire_sword = max(1, active_skills.effects[3]*artifacts.fs_bonus)
         self.war_cry = max(1, active_skills.effects[4]*artifacts.wc_bonus)
         self.shadow_clone = active_skills.effects[5]*artifacts.sc_bonus
         self.mana_costs = active_skills.mana_costs
@@ -660,7 +660,6 @@ class Player(object):
         # Transition Screen enjoyment.
         transition_num = stage.transitions[self.start_stage:self.stage].sum()
         transition_time = self.transition_delay*transition_num
-        self.trans_performance = transition_num, transition_time
 
         # Main Performance loop, calculate attacks and times of attack_durations.
         # We fix DPS per stage and alter attack rate to get dmg per attack.
@@ -671,8 +670,8 @@ class Player(object):
                                                            1)
             self.general_performance[i, 0] = attacks.sum().astype(int)
             self.general_performance[i, 1] = round(active.sum()/60, 2)
-            self.general_performance[i, 2] = round((wasted.sum()
-                + self.trans_performance[1])/60, 2)
+            self.general_performance[i, 2] = round((wasted.sum() 
+                                                    + transition_time)/60, 2)
 
         # Pet Performance.
         if self.pet_rate:
@@ -682,8 +681,8 @@ class Player(object):
                                                            1)
             self.pet_performance[0] = attacks.sum().astype(int)
             self.pet_performance[1] = round(active.sum()/60, 2)
-            self.pet_performance[2] = round((wasted.sum()
-                + self.trans_performance[1])/60, 2)
+            self.pet_performance[2] = round((wasted.sum() 
+                                            + transition_time)/60, 2)
 
         # Tap Performance
         if self.taps_sec:
@@ -693,7 +692,7 @@ class Player(object):
             self.tap_performance[0] = attacks.sum()
             self.tap_performance[1] = round(active.sum()/86400, 2)
             self.tap_performance[2] = round((wasted.sum()
-                + self.trans_performance[1])/86400, 2)
+                                            + transition_time)/86400, 2)
 
         # Really important Heavenly Strike performance.
         if self.heavenly_strike>1:
@@ -706,7 +705,7 @@ class Player(object):
             self.hs_performance[0] = attacks.sum()
             self.hs_performance[1] = round(active.sum()/86400, 2)
             self.hs_performance[2] = round((wasted.sum()
-                + self.trans_performance[1])/86400, 2)
+                                            + transition_time)/86400, 2)
 
         # Record splash results.
         damage_splashed = np.maximum(0, self.splash_damage
@@ -745,7 +744,7 @@ class Player(object):
         c1, c2 = (4, 8)
         hline = '\t'+'\u2015'*(c1+c2+29)
         hline2 = '\t'+'\u2015'*(c1+c2+42)
-        print('\t'+'GENERAL RESULTS:')
+        print('\t'+'GENERAL RESULTS FOR:', self.username)
         print(hline)
         print('\t'+'Final Stage:', str(self.stage).rjust(c1),
             '\t\t'+'Boss HP:',
@@ -972,7 +971,7 @@ def run_simulation(input_csv, silent=False):
     return (player, data.stage)
 
 if __name__ == '__main__':
-    player, stage = run_simulation('playerinput.csv')
+    player, stage = run_simulation('YourUsername.csv')
 
     #plot_dps_vs_bosshp(player, stage)
     #plot_tap_damage(player, stage)

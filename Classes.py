@@ -10,11 +10,13 @@ This code might still work in v2.7 if all instances of "dtype=str"
 are replaced with "dtype=np.string_", without the quotes.
 
 This file can be directly run to split out tables of all input data
-used in the simulation.
+used in the simulation; just make sure your input file is correctly
+set at the bottom of this code.
 """
   
 class GameData(object):
     def __init__(self, input_file):
+        self.username = input_file.split('.')[0]
         self.input = np.genfromtxt('player\\'+input_file, delimiter=',', dtype=str)
         self.artifacts = Artifacts(self.input)
         self.active_skills = ActiveSkills(self.input, self.artifacts)
@@ -25,9 +27,11 @@ class GameData(object):
         self.pets = Pets(self.input)
         self.skill_tree = SkillTree(self.input)
         self.sword_master = SwordMaster()
-        self.stage = Stage(self.input, self.skill_tree, self.equipment.titan_hp, self.artifacts)
+        self.stage = Stage(self.input, self.skill_tree,
+                            self.equipment.titan_hp, self.artifacts)
 
     def print_info(self, stage_skip_factor=100):
+        print('INPUT VALUES FOR:', self.username)
         self.active_skills.print_info()
         self.artifacts.print_info()
         self.equipment.print_info()
@@ -41,9 +45,8 @@ class ActiveSkills(object):
     def __init__(self, input_csv, artifacts):
         from numpy.core import defchararray
 
-        csv_data = np.genfromtxt('csv\ActiveSkills.csv', delimiter=',', dtype=str)
-        csv_data2 = np.genfromtxt('csv\ActiveSkillInfo.csv', delimiter=',', dtype=str)
-        csv_split = defchararray.rsplit(csv_data2, '/')
+        csv_data = np.genfromtxt('csv\ActiveSkillInfo.csv', delimiter=',', dtype=str)
+        csv_split = defchararray.rsplit(csv_data, '/')
 
         # Find active skill info in player input CSV.
         start_idx = np.array([input_csv[:,0]=='ACTIVE SKILL LEVELS']).argmax()+1
@@ -82,7 +85,7 @@ class ActiveSkills(object):
         names = (['Heavenly Strike', 'Critical Strike', 'Hand of Midas',
             'Fire Sword', 'War Cry', 'Shadow Clone'])
         print('')
-        print('SKILL NAME'.ljust(22), '\t'+'LEVEL'.rjust(5),
+        print('ACTIVE SKILL NAME'.ljust(22), '\t'+'LEVEL'.rjust(5),
             '\t'+'BASE EFFECT'.rjust(12), '\t'+'MANA COST'.rjust(9),
             '\t'+'DURATION'.rjust(8), '\t'+'COOLDOWN'.rjust(8))
         for i, name in enumerate(names):
@@ -170,22 +173,29 @@ class Artifacts(object):
 
     def print_info(self):
         print('')
-        print('ARTIFACT NAME'.ljust(22), '\t'+'LEVEL'.rjust(5),
-            '\t'+'EFFECT'.rjust(6), '\t'+'DAMAGE'.rjust(8),
-            '\t'+'RELIC VALUE'.rjust(8))
+        print('ARTIFACT NAME'.ljust(22),
+            '\t'+'LEVEL'.rjust(5),
+            '\t'+'EFFECT'.rjust(6),
+            '\t'+'DAMAGE'.rjust(8))
         for i, name in enumerate(self.name):
             if (self.level[i]==0):
                 continue
-            print(name.ljust(22), '\t'+str(self.level[i]).rjust(5), 
+            print(name.ljust(22), 
+                '\t'+str(self.level[i]).rjust(5), 
                 '\t'+str('%.2f'%self.effect[i]).rjust(6), 
-                '\t'+letters(self.damage[i], '%').rjust(8),
-                '\t'+letters(self.relic_value[i]).rjust(11))
+                '\t'+letters(self.damage[i], '%').rjust(8))
         print('Total Artifact Damage:', letters(self.total_damage, '%'))
-        print('Total Relic Value:', letters(self.relic_value.sum()))
 
 
 class Equipment(object):
     def __init__(self, input_csv):
+        """
+        I won't be using EquipmentInfo.csv to generate equipment values until
+        the in-game displayed equipment levels are fixed.  At this point, using
+        real levels isn't any more accurate than having the player enter
+        their rounded equipment multipliers directly.
+        """
+
         #equip_csv = np.genfromtxt('csv\EquipmentInfo.csv', delimiter=',', dtype=str)
 
         # Equipment formula:
@@ -551,4 +561,4 @@ def letters(sci_number, option=''):
 
 if __name__ == '__main__':
     # Run directly to print out input values.
-    GameData('playerinput.csv').print_info()
+    GameData('YourUsername.csv').print_info()
