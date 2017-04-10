@@ -44,16 +44,6 @@ This code reflects v1.3 of Tap Titans 2.
 4. Equipment/Pet Bonuses in Use:
     All Equipment bonuses are used and All pet bonuses should be in play
     other than for Fluffers.
-
-
-TODO:
-1. Sci notation option (you heathens).
-2. Finish relic efficiency and add slider plot.
-3. Finish adding blue skill-tree skills.
-4. Silent March simulations.
-5. Build function to print tables better.
-6. Update output to include active skill info.
-7. Include mana calculations.
 """
 
 class Player(object):
