@@ -1,6 +1,6 @@
 # TT2-Sim: A Gameplay Simulator
 
-*Update notes listed in [docs](https://github.com/metxchris/TT2-Sim/tree/master/docs).*
+*Update notes listed [here](https://github.com/metxchris/TT2-Sim/tree/master/docs#update-history).*
 
 TT2-Sim is an analysis focused Tap Titans 2 simulator written in Python.  The design goal of this simulator was to answer several of the many infamous subreddit questions, such as:
 - Is it worth buying this thing?
