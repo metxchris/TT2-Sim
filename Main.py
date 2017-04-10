@@ -972,7 +972,7 @@ def run_simulation(input_csv, silent=False):
     return (player, data.stage)
 
 if __name__ == '__main__':
-    player, stage = run_simulation('playerinput_marzx13.csv')
+    player, stage = run_simulation('playerinput.csv')
 
     #plot_dps_vs_bosshp(player, stage)
     #plot_tap_damage(player, stage)
