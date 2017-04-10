@@ -95,7 +95,7 @@ def plot_splash(player, stage, max_splash=20):
     domain = player.splash_array>0
     x = stage.number[domain]
     y = np.minimum(player.splash_array[domain], max_splash)
-    # Build Cont. Splash array.
+    # Build Min Splash array.
     y2 = np.zeros_like(y)
     y2[0] = y[0]
     for i in range(1, y.size):
@@ -114,7 +114,7 @@ def plot_splash(player, stage, max_splash=20):
     ax.plot(x, y, 'o', markersize=3, markeredgewidth=0.75, color='b',
         fillstyle='none', label='Max Splash')
     ax.plot(x, y2, '-', markersize=3, markeredgewidth=0.5, color='r',
-        fillstyle='none', label='Cont. Splash')
+        fillstyle='none', label='Min Splash')
     legend = ax.legend(loc='lower left', frameon=False)
     plt.tight_layout()
     plt.show()

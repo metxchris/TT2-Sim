@@ -16,8 +16,8 @@ used in the simulation.
 class GameData(object):
     def __init__(self, input_file):
         self.input = np.genfromtxt('player\\'+input_file, delimiter=',', dtype=str)
-        self.active_skills = ActiveSkills(self.input)
         self.artifacts = Artifacts(self.input)
+        self.active_skills = ActiveSkills(self.input, self.artifacts)
         self.equipment = Equipment(self.input)
         self.heroes = Heroes(self.input)
         self.hero_multipliers = HeroMultipliers(self.heroes.level.size)
@@ -28,6 +28,7 @@ class GameData(object):
         self.stage = Stage(self.input, self.skill_tree, self.equipment.titan_hp, self.artifacts)
 
     def print_info(self, stage_skip_factor=100):
+        self.active_skills.print_info()
         self.artifacts.print_info()
         self.equipment.print_info()
         self.heroes.print_info()
@@ -37,8 +38,12 @@ class GameData(object):
     
 
 class ActiveSkills(object):
-    def __init__(self, input_csv):
+    def __init__(self, input_csv, artifacts):
+        from numpy.core import defchararray
+
         csv_data = np.genfromtxt('csv\ActiveSkills.csv', delimiter=',', dtype=str)
+        csv_data2 = np.genfromtxt('csv\ActiveSkillInfo.csv', delimiter=',', dtype=str)
+        csv_split = defchararray.rsplit(csv_data2, '/')
 
         # Find active skill info in player input CSV.
         start_idx = np.array([input_csv[:,0]=='ACTIVE SKILL LEVELS']).argmax()+1
@@ -48,19 +53,46 @@ class ActiveSkills(object):
         active = (input_csv[start_idx:end_idx, 2]!='')
 
         a = np.array([0])
-        hs_skill = max(a, skill_levels[(types=='HeavenlyStrike')*active])[0]+1
-        cs_skill = max(a, skill_levels[(types=='CriticalStrike')*active])[0]+1
-        hom_skill = max(a, skill_levels[(types=='HandOfMidas')*active])[0]+1
-        fs_skill = max(a, skill_levels[(types=='FireSword')*active])[0]+1
-        wc_skill = max(a, skill_levels[(types=='WarCry')*active])[0]+1
-        sc_skill = max(a, skill_levels[(types=='ShadowClone')*active])[0]+1
+        hs_level = max(a, skill_levels[(types=='HeavenlyStrike')*active])[0]
+        cs_level = max(a, skill_levels[(types=='CriticalStrike')*active])[0]
+        hom_level = max(a, skill_levels[(types=='HandOfMidas')*active])[0]
+        fs_level = max(a, skill_levels[(types=='FireSword')*active])[0]
+        wc_level = max(a, skill_levels[(types=='WarCry')*active])[0]
+        sc_level = max(a, skill_levels[(types=='ShadowClone')*active])[0]
 
-        self.heavenly_strike = csv_data[hs_skill, 1].astype(np.float)
-        self.crit_strike = csv_data[cs_skill, 2].astype(np.float)
-        self.hom = csv_data[hom_skill, 3].astype(np.float)
-        self.fire_sword = csv_data[fs_skill, 4].astype(np.float)
-        self.war_cry = csv_data[wc_skill, 5].astype(np.float)
-        self.shadow_clone = csv_data[sc_skill, 6].astype(np.float)
+        self.levels = np.array([hs_level, cs_level, hom_level, 
+            fs_level, wc_level, sc_level])
+        self.effects = np.zeros(6)
+        self.mana_costs = np.zeros(6)
+        self.durations = np.zeros(6)
+        self.cooldowns = np.zeros(6)
+
+        # f = lambda x: int(x) if x.is_integer() else x
+
+        for i, level in enumerate(self.levels):
+            if level:
+                self.effects[i] = float(csv_split[i+1, 1][level-1])
+                self.durations[i] = (int(csv_split[i+1, 4][0])
+                    + artifacts.skill_durations[i])
+                self.cooldowns[i] = int(csv_split[i+1, 6][0])
+                self.mana_costs[i] = (int(csv_split[i+1, 9][level-1])
+                    - artifacts.skill_cost_red[i])
+
+    def print_info(self):
+        names = (['Heavenly Strike', 'Critical Strike', 'Hand of Midas',
+            'Fire Sword', 'War Cry', 'Shadow Clone'])
+        print('')
+        print('SKILL NAME'.ljust(22), '\t'+'LEVEL'.rjust(5),
+            '\t'+'BASE EFFECT'.rjust(12), '\t'+'MANA COST'.rjust(9),
+            '\t'+'DURATION'.rjust(8), '\t'+'COOLDOWN'.rjust(8))
+        for i, name in enumerate(names):
+            if (self.levels[i]==0):
+                continue
+            print(name.ljust(22), '\t'+str(self.levels[i]).rjust(5), 
+                '\t'+str('%.2f'%self.effects[i]).rjust(12), 
+                '\t'+str(self.mana_costs[i]).rjust(9),
+                '\t'+str(self.durations[i]).rjust(8),
+                '\t'+str(self.cooldowns[i]).rjust(8))
 
 
 class Artifacts(object):
@@ -124,18 +156,32 @@ class Artifacts(object):
         self.chest_chance = self.effect[self.name=='Egg of Fortune'][0]
         self.x10_gold_chance = self.effect[self.name=='Divine Chalice'][0]
         self.cost_reduction = self.effect[self.name=='Staff of Radiance'][0]
+        # Active Skill Related.
+        duration_artifacts = (['Forbidden Scroll', 'Ring of Fealty', 
+            'Glacial Axe', 'Aegis', 'Swamp Gauntlet'])
+        cost_red_artifacts = (['Infinity Pendulum', 'Glove of Kuma', 'Titan Spear',
+            'Oak Staff', 'The Arcana Cloak', 'Hunter\'s Ointment'])
+        self.skill_durations = np.zeros(6)
+        self.skill_cost_red = np.zeros(6)
+        for i, artifact in enumerate(duration_artifacts):
+            self.skill_durations[i+1] = self.effect[self.name==artifact][0]
+        for i, artifact in enumerate(cost_red_artifacts):
+            self.skill_cost_red[i] = self.effect[self.name==artifact][0]
 
     def print_info(self):
         print('')
         print('ARTIFACT NAME'.ljust(22), '\t'+'LEVEL'.rjust(5),
-            '\t'+'EFFECT'.rjust(6), '\t'+'DAMAGE'.rjust(8))
+            '\t'+'EFFECT'.rjust(6), '\t'+'DAMAGE'.rjust(8),
+            '\t'+'RELIC VALUE'.rjust(8))
         for i, name in enumerate(self.name):
             if (self.level[i]==0):
                 continue
             print(name.ljust(22), '\t'+str(self.level[i]).rjust(5), 
                 '\t'+str('%.2f'%self.effect[i]).rjust(6), 
-                '\t'+letters(self.damage[i], '%').rjust(8))
+                '\t'+letters(self.damage[i], '%').rjust(8),
+                '\t'+letters(self.relic_value[i]).rjust(11))
         print('Total Artifact Damage:', letters(self.total_damage, '%'))
+        print('Total Relic Value:', letters(self.relic_value.sum()))
 
 
 class Equipment(object):
@@ -147,7 +193,7 @@ class Equipment(object):
         #num2 = this.level
         #num = artifact bonus
         #Mathf.Max(1, Mathf.FloorToInt((float)(this.currentEquipment.level / 10)
-        # Your real equipment level is Level*10 + randint(0, 9)
+        # Your real equipment level is Level*10 + 5, on average.
 
         start_idx = np.array([input_csv[:,0]=='EQUIPMENT MULTIPLIERS']).argmax()+1
         end_idx = start_idx + np.array([input_csv[start_idx:,0]=='']).argmax()
@@ -264,9 +310,9 @@ class Pets(object):
         bonus_inc = pet_csv[1:,7].astype(np.float)
 
         # Find pet info locations in player input CSV.
-        start_idx = np.array([input_csv[:,0]=='PET LEVELS']).argmax()+1
+        start_idx = (input_csv[:,0]=='PET LEVELS').argmax()+1
         end_idx = start_idx + pet_csv[1:,1].size
-        active_idx = np.array([input_csv[start_idx:end_idx,2]!='']).argmax()
+        active_idx = (input_csv[start_idx:end_idx,2]!='').argmax()
 
         # Initialize object values.
         self.id = pet_csv[1:,0]
@@ -311,10 +357,6 @@ class Pets(object):
         self.splash_damage = pet_bv[pet_bt=='SplashDamage'][0]
         self.mana_regen = pet_bv[pet_bt=='ManaRegen'][0]
 
-        # Error check.
-        if (self.name!=self.active_name).all():
-            print('ERROR: No matches for active pet name from player input CSV.')
-
     def print_info(self):
         print('')
         print('PET NAME'.ljust(8), '\t'+'LEVEL'.rjust(5),
@@ -348,22 +390,33 @@ class SkillTree(object):
         for i, j in enumerate(self.level):
             self.effect[i] = self.effect_level[i, self.level[i]]
 
+        def get_skill(skill_name):
+            if (self.attributes==skill_name).any():
+                effect = self.effect[self.attributes==skill_name][0]
+            else:
+                print('ERROR: Could not find', skill_name, 'skill in input file.')
+                effect = 0
+            return effect
+
         # Active Skill Bonuses.
-        self.wc_bonus = self.effect[self.attributes=='HelperDmgSkillBoost'][0]
-        self.hs_bonus = self.effect[self.attributes=='BurstSkillBoost'][0]
-        self.fs_bonus = self.effect[self.attributes=='FireTapSkillBoost'][0]
-
+        self.wc_bonus = get_skill('HelperDmgSkillBoost')
+        self.hs_bonus = get_skill('BurstSkillBoost')
+        self.fs_bonus = get_skill('FireTapSkillBoost')
         # Damage Bonuses.
-        self.pet_damage = self.effect[self.attributes=='PetDmg'][0]
-        self.melee_damage = max(1, self.effect[self.attributes=='MeleeHelperDmg'][0])
-        self.spell_damage = max(1, self.effect[self.attributes=='SpellHelperDmg'][0])
-        self.ranged_damage = max(1, self.effect[self.attributes=='RangedHelperDmg'][0])
-        self.splash_damage = self.effect[self.attributes=='SplashDmg'][0]
-
+        self.pet_damage = get_skill('PetDmg')
+        self.melee_damage = max(get_skill('MeleeHelperDmg'), 1)
+        self.spell_damage = max(get_skill('SpellHelperDmg'), 1)
+        self.ranged_damage = max(get_skill('RangedHelperDmg'), 1)
+        self.splash_damage = get_skill('SplashDmg')
+        # Mana Related.
+        self.mana_siphon = get_skill('ManaStealSkillBoost')
+        self.mana_regen = get_skill('MPRegenBoost')
+        self.mana_capacity = get_skill('MPCapacityBoost')
+        self.manni_mana = get_skill('ManaMonster')
         # Misc Effects.
-        self.flash_zip = self.effect[self.attributes=='BossDmgQTE'][0]
-        self.boss_timer = self.effect[self.attributes=='BossTimer'][0]
-        self.tf_chance = self.effect[self.attributes=='MultiMonsters'][0]
+        self.flash_zip = get_skill('BossDmgQTE')
+        self.boss_timer = get_skill('BossTimer')
+        self.tf_chance = get_skill('MultiMonsters')
 
     def print_info(self):
         print('')
@@ -392,7 +445,10 @@ class SwordMaster(object):
 class Stage(object):
     def __init__(self, input_csv, skill_tree, hp_multiplier, artifacts):
         # Initialize Stage Information.
-        stage_cap = input_csv[:, 0][input_csv[:, 1]=='StageCap'][0].astype(np.int)
+        if (input_csv[:, 1]=='StageCap').any():
+            stage_cap = input_csv[:, 0][input_csv[:, 1]=='StageCap'][0].astype(np.int)
+        else:
+            stage_cap = 5500
         ip_level = skill_tree.effect[skill_tree.attributes=='LessMonsters'][0].astype(np.int)
         self.cap = min(stage_cap, 5500)
         self.number = np.arange(self.cap + 1)

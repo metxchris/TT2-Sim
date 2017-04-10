@@ -1,20 +1,21 @@
     GENERAL INPUT VALUES, (VALUE NAME NOTES),
         304,ClanLevel,
-        1000,StartStage,
-        5000,StageCap,(Max=5500)
+        2000,StartStage,
+        3500,StageCap,(Max=5500)
         4000,HeroLevelCap,
         20,TapsPerSec,(Max=20)
         50,ClanSize,
         2,TransitionScreenDelay,(Seconds)
+        0.2,DeviceLag,(Seconds)
         0,DisableHeroes,
         0,DisablePet,(Still applies bonuses)
         ,,
     ACTIVE SKILL LEVELS, (LEVEL NAME ACTIVATED),
         15,HeavenlyStrike,ACTIVATED
-        15,CriticalStrike,ACTIVATED
-        1,HandOfMidas,ACTIVATED
+        15,CriticalStrike,
+        15,HandOfMidas,
         15,FireSword,
-        1,WarCry,ACTIVATED
+        15,WarCry,
         15,ShadowClone,
         ,,
     EQUIPMENT MULTIPLIERS, (MULTIPLIER TYPE EQUIPPED),

@@ -1,9 +1,8 @@
-"""
-Exported directly from the APK, with minor syntax changes
-to suit Python, and a few removals of variables that weren't needed.
-"""
-
 class SVM(object):
+     """
+     Exported directly from the APK, with minor syntax changes
+     to suit Python, and a few removals of variables that weren't needed.
+     """
 
      serverVarsVersion = "default"
 
