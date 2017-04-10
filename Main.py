@@ -941,8 +941,8 @@ class Player(object):
         if self.pet_performance[0]:
             print('\t'+'Pet Attacks:'.ljust(c1), 
                 letters(self.pet_performance[0]).rjust(c2),
-                str('%.2f'%self.pet_performance[1]).rjust(c3-5),'days',
-                str('%.2f'%self.pet_performance[2]).rjust(c4-5),'days',
+                str('%.2f'%self.pet_performance[1]).rjust(c3-5),'mins',
+                str('%.2f'%self.pet_performance[2]).rjust(c4-5),'mins',
                 str('%.2f'%(self.pet_performance[1:].sum())).rjust(c5-5),'mins')
         print(hline)
         print('\t\u2020 Monster death animation delay:',

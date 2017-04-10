@@ -120,7 +120,7 @@ There is great potential for model analysis using TT2-Sim. A full overview of va
     ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
     Tap Attacks:         6.79B     3928.89 days        0.05 days     3928.94 days ‡
     Heav. Strikes:     370.95k       23.60 days        0.05 days       23.65 days ‡
-    Pet Attacks:        12.75k      146.68 days       59.08 days      205.76 mins
+    Pet Attacks:        12.75k      146.68 mins       59.08 mins      205.76 mins
     ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
     † Monster death animation delay: 0.3 sec
     ‡ Assumes unlimited time for boss fights.
