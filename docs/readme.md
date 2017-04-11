@@ -1,14 +1,14 @@
 This folder hosts the repository's [Wiki](https://metxchris.github.io/TT2-Sim/).
 
 # Todo List
-* Sci notation option (you heathens).
-* Finish relic efficiency and add slider plot.
-* Finish adding blue skill-tree skills.
-* Silent March simulations.
-* Include mana calculations (in-progress).
-* Seconds to mins/hrs/days/years function.
-* Improve documentation.
-* Overhaul plotting file.
+- [ ] Sci notation option (you heathens).
+- [ ] Finish relic efficiency and add slider plot.
+- [ ] Finish adding blue skill-tree skills.
+- [ ] Silent March simulations.
+- [ ] Include mana calculations (in-progress).
+- [ ] Seconds to mins/hrs/days/years function.
+- [ ] Improve documentation.
+- [ ] Overhaul plotting file.
 
 # Update History
 ###### 11 April 2017
