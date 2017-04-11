@@ -1,0 +1,5 @@
+# Device Calibration
+
+The `DeviceLag` and `TransitionDelay` variables in your input file are needed to get the Time-table display to align with your actual playing experience.   `DeviceLag` will add an additional amount of delay time to each monster spawn, and `TransitionDelay` is the full duration of your transition screens.
+
+In order to calibrate the `DeviceLag` variable, I recommend timing yourself for 100 stages of play right after you prestige; this should only take a few minutes to complete.  You'll ideally want to have maximum splash and one-hit kills on each of these stages, for conistency.  You should tap as fast as possible while timing yourself, and also use the War Cry and Shadow Clone skills liberally to minimize the amount of delay between monster spawns and kills.  After obtaining your time for these stages, run the simulation over the same stage range and adjust the `DeviceLag` variable until the fastest listed time is relatively close to your measured time (doesn't need to be perfect).
