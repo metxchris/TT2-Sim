@@ -162,9 +162,8 @@ class Player(object):
             **max(self.clan_level - SVM.clanQuestStageNerf, 0))
 
         # Initialize active skill bonuses. Heavenly Strike active skill is 
-        # set to max because it isn't used in any DPS calculations.
-        self.heavenly_strike = max(1, max(15, active_skills.effects[0])
-            * artifacts.hs_bonus)
+        # only used for goofy time-table calc.
+        self.heavenly_strike = active_skills.effects[0]*artifacts.hs_bonus
         self.crit_strike = active_skills.effects[1]
         self.hom = active_skills.effects[2]*artifacts.hom_bonus
         self.fire_sword = max(1, active_skills.effects[3]*artifacts.fs_bonus)
