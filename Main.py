@@ -3,8 +3,8 @@ import numpy as np
 from math import modf
 from copy import deepcopy
 from Classes import GameData, letters
-from Plotting import *
 from ServerVarsModel import SVM
+import Plotting
 
 """
 TT2-Sim by MetxChris.
@@ -105,6 +105,9 @@ class Player(object):
         self.splash_array = np.zeros_like(stage.number, dtype=np.int)
 
         # Output performance arrays (attacks, duration).
+        self.general_attacks = np.zeros((len(self.attack_durations), stage.number.size))
+        self.active_time = np.zeros((len(self.attack_durations), stage.number.size))
+        self.wasted_time = np.zeros((len(self.attack_durations), stage.number.size))
         self.general_performance = np.zeros((len(self.attack_durations), 3))
         self.pet_performance = np.zeros(3, dtype=np.float)
         self.hs_performance = np.zeros(3, dtype=np.float)
@@ -403,7 +406,7 @@ class Player(object):
         bm_tile = skills.bonus_mult_tile 
         bl_tile = skills.bonus_level_tile
 
-        # Hero level and hero id match condition.
+        # Hero level check and hero id match condition.
         condition = ((hl_tile>=bl_tile)*(hi_tile==bi_tile))
 
         # Skill effect matches.
@@ -656,10 +659,13 @@ class Player(object):
                 active_time_array[:, i] = time_per_titan*remaining_titans + time_per_boss
                 wasted_time_array[:, i] = delay_per_spawn*(remaining_titans + 1)
 
+            pure_attack_time = ((remaining_titans*stage.titan_hp[domain] + stage.boss_hp[domain])
+                / dps[domain])
+            # Average values over the measurement range.
             avg_attack_count = attack_count_array.sum(axis=1)/measurement_range.size
             avg_active_time = active_time_array.sum(axis=1)/measurement_range.size
             avg_wasted_time = wasted_time_array.sum(axis=1)/measurement_range.size
-            return(avg_attack_count, avg_active_time, avg_wasted_time)
+            return(avg_attack_count, avg_active_time, avg_wasted_time, pure_attack_time)
 
         # Damage type dps for output display.
         self.melee_dps = self.hero_dps[heroes.melee_type].sum()
@@ -672,22 +678,31 @@ class Player(object):
 
         # Main Performance loop, calculate attacks and times of attack_durations.
         # We fix DPS per stage and alter attack rate to get dmg per attack.
+        attack_dps = self.total_dps_array[:, 0]
+        domain = (attack_dps>0)*(stage.number<self.stage)
         for i, attack_duration in enumerate(self.attack_durations):
-            attack_dps = self.total_dps_array[:, 0]
-            attacks, active, wasted = performance_analysis(attack_duration,
-                                                           attack_dps,
-                                                           1)
+            attacks, active, wasted, pure = performance_analysis(attack_duration,
+                                                                 attack_dps,
+                                                                 1)
+            # Summed values used for printed output.
             self.general_performance[i, 0] = attacks.sum().astype(int)
             self.general_performance[i, 1] = round(active.sum()/60, 2)
             self.general_performance[i, 2] = round((wasted.sum() 
-                                                    + transition_time)/60, 2)
+                + transition_time)/60, 2)
+            # Arrays used for calculations and plotting.
+            self.general_attacks[i, domain] = attacks
+            self.active_time[i, domain] = active
+            self.wasted_time[i, domain] = wasted
+
+            # domain = (attack_dps>0)*(stage.number<self.stage)
+            # stage_skill_start = np.minimum(stage.number[domain][pure>2], self.stage).min()
 
         # Pet Performance.
         if self.pet_rate:
             attack_dps = self.pet_attack_damage_array*self.pet_rate
-            attacks, active, wasted = performance_analysis(1/self.pet_rate,
-                                                           attack_dps,
-                                                           1)
+            attacks, active, wasted, __ = performance_analysis(1/self.pet_rate,
+                                                               attack_dps,
+                                                               1)
             self.pet_performance[0] = attacks.sum().astype(int)
             self.pet_performance[1] = round(active.sum()/60, 2)
             self.pet_performance[2] = round((wasted.sum() 
@@ -695,9 +710,9 @@ class Player(object):
 
         # Tap Performance
         if self.taps_sec:
-            attacks, active, wasted = performance_analysis(1/self.taps_sec,
-                                                           self.tap_dps_array,
-                                                           0)
+            attacks, active, wasted, __ = performance_analysis(1/self.taps_sec,
+                                                               self.tap_dps_array,
+                                                               0)
             self.tap_performance[0] = attacks.sum()
             self.tap_performance[1] = round(active.sum()/86400, 2)
             self.tap_performance[2] = round((wasted.sum()
@@ -708,7 +723,7 @@ class Player(object):
             strike_duration = self.skill_durations[0] + self.skill_cooldowns[0]
             strike_dps = (self.heavenly_strike
                 * self.tap_with_avg_crit_array/strike_duration)
-            attacks, active, wasted = performance_analysis(strike_duration,
+            attacks, active, wasted, __ = performance_analysis(strike_duration,
                                                            strike_dps,
                                                            0)
             self.hs_performance[0] = attacks.sum()
@@ -978,7 +993,8 @@ def run_simulation(input_csv, silent=False):
 if __name__ == '__main__':
     player, stage = run_simulation('YourUsername.csv')
 
-    plot_dps_vs_bosshp(player, stage)
-    plot_tap_damage(player, stage)
-    plot_dps(player, stage)
-    plot_splash(player, stage)
+    # Plotting.time_per_stage(player, stage)
+    # Plotting.dps_vs_bosshp(player, stage)
+    # Plotting.dps_vs_gold(player, stage)
+    # Plotting.tap_damage(player, stage)
+    # Plotting.splash(player, stage)

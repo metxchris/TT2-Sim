@@ -5,11 +5,10 @@ from ServerVarsModel import SVM
 import matplotlib.pyplot as plt
 
 """
-The plotting functions aren't as well kept as the main simulation, 
-and some may break as I continue to make changes.  
+The plotting functions aren't as well kept as the main simulation, yet.
 """
 
-def plot_dps_vs_bosshp(player, stage):
+def dps_vs_bosshp(player, stage):
     
     domain = player.total_dps_array[:, 0]>0
     x = stage.number[domain][::5]
@@ -33,7 +32,7 @@ def plot_dps_vs_bosshp(player, stage):
     plt.tight_layout()
     plt.show()
 
-def plot_tap_damage(player, stage):
+def tap_damage(player, stage):
     domain1 = player.tap_damage_array[:, 0]>0
     domain2 = player.tap_damage_array[:, 1]>0
     x1 = stage.number[domain1][::5]
@@ -58,7 +57,7 @@ def plot_tap_damage(player, stage):
     plt.tight_layout()
     plt.show()
 
-def plot_dps(player, stage):
+def dps_vs_gold(player, stage):
     pet_dps_array = player.pet_attack_damage_array*player.pet_rate
     tap_rate = str(player.taps_sec)
 
@@ -89,7 +88,7 @@ def plot_dps(player, stage):
     plt.tight_layout()
     plt.show()
 
-def plot_splash(player, stage, max_splash=20):
+def splash(player, stage, max_splash=20):
     """ You may want to adjust your starting stage to get a nice plot here. """
 
     domain = player.splash_array>0
@@ -119,7 +118,7 @@ def plot_splash(player, stage, max_splash=20):
     plt.tight_layout()
     plt.show()
 
-def plot_relics(player, stage):
+def relic_efficiency(player, stage):
     """ This calc isn't finished yet. """
 
     domain = player.relic_efficiency[:, 0]>0
@@ -138,5 +137,31 @@ def plot_relics(player, stage):
     ax.set_title(title, fontsize=11, loc=('center'))
     ax.plot(x, y, 'o', markersize=2, markeredgewidth=0.5, color='b',
         fillstyle='none')
+    plt.tight_layout()
+    plt.show()
+
+def time_per_stage(player, stage):
+    # self.attack_durations must have at least 5 elements for this to work.
+    domain = player.active_time[0, :]>0
+    x = stage.number[domain]
+    y1 = player.active_time[0, :][domain] + player.wasted_time[0, :][domain]
+    y2 = player.active_time[4, :][domain] + player.wasted_time[4, :][domain]
+    y3 = player.active_time[-2, :][domain] + player.wasted_time[-2, :][domain]
+    fig = plt.figure(figsize=(6*0.75, 4.5*0.75))
+    ax = fig.add_subplot(111, 
+        xlim=(min(x), max(x)),
+        ylim=(min(y1), max(y1.max(), y2.max(), y3.max())))
+    ax.set_xlabel('$\\rm Stage\ Number$', fontsize=10)
+    ax.set_ylabel('Time (s)', fontsize=10)
+    max_efficiency = letters(max(player.relic_efficiency[:, 0]))
+    title = 'Time Per Stage'
+    ax.set_title(title, fontsize=11, loc=('center'))
+    ax.plot(x, y1, '-', linewidth=1.5, color='b',
+        fillstyle='none', label=str(player.attack_durations[0])+'s interval')
+    ax.plot(x, y2, '--',linewidth=1.5, color='r',
+        fillstyle='none', label=str(player.attack_durations[4])+'s interval')
+    ax.plot(x, y3, ':', linewidth=1.25, color='g',
+        fillstyle='none', label=str(player.attack_durations[-2])+'s interval')
+    legend = ax.legend(loc='upper left', frameon=False, fontsize=9)
     plt.tight_layout()
     plt.show()
