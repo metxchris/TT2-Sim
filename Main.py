@@ -50,8 +50,8 @@ class Player(object):
 
     # These control what values are displayed in the printed results.
     splash_amounts = ([20, 4, 3, 2, 1])
-    attack_durations = ([0.1, 0.2, 0.3, 0.4, 0.5,
-                         0.6, 0.8, 1.0, 1.5, 2.0, 3.0])
+    attack_durations = ([0.1, 0.2, 0.3, 0.4, 0.5, 0.6,
+                         0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 3.0])
 
     def __init__(self, data):
 
@@ -84,7 +84,7 @@ class Player(object):
             return value
 
         # Store player input values.
-        self.clan_level = max(get_input('ClanLevel'), 1).astype(np.int)
+        self.clan_level = get_input('ClanLevel')
         self.stage_cap = max(get_input('StageCap'), stage.cap).astype(np.int)
         self.start_stage = min(max(get_input('StartStage'), 1), 
             self.stage_cap).astype(np.int)
@@ -92,7 +92,7 @@ class Player(object):
         self.taps_sec = min(get_input('TapsPerSec'), 20)
         self.clan_size = min(get_input('ClanSize'), 50).astype(np.int)
         self.transition_delay = max(get_input('TransitionScreenDelay'), 0.3)
-        self.device_lag = get_input('DeviceLag') + 0.01
+        self.device_lag = get_input('DeviceLag')
         self.disable_heroes = get_input('DisableHeroes')
         self.disable_pet = get_input('DisablePet')
         self.username = data.username
@@ -169,7 +169,7 @@ class Player(object):
         self.shadow_clone = active_skills.effects[5]*artifacts.sc_bonus
         self.mana_costs = active_skills.mana_costs
         self.skill_durations = active_skills.durations
-        self.skill_costs = active_skills.cooldowns
+        self.skill_cooldowns = active_skills.cooldowns
         self.skill_levels = active_skills.levels
         
         # War Cry Skill Tree Upgrade (This boosts avg DPS but not displayed DPS)
@@ -586,7 +586,7 @@ class Player(object):
 
         stage, heroes = data.stage, data.heroes
 
-        def performance_analysis(attack_duration, dps, use_zip):
+        def performance_analysis(base_attack_duration, dps, use_zip):
             """
             Here we calculate attacks made and time spent on each stage, using
             stored dps values from the simulation loop.  The use_zip option
@@ -595,52 +595,71 @@ class Player(object):
             zip_equivalent is used to convert the number of pet attacks reduced
             by flash zip into the number of input attacks reduced as per input dps.  
             """
+            
+            domain = (dps>0)*(stage.number<self.stage)
+            step_size = 0.01
+            max_measurement_delay = 0.05 + step_size
 
-            attack_rate = 1/attack_duration
-            idx = (dps>0)*(stage.number<self.stage)
+            # The max value used by the range is max_measurement_delay - step_size
+            measurement_range = np.arange(0, max_measurement_delay, step_size)
+            attack_count_array = np.zeros((dps[domain].size, measurement_range.size))
+            active_time_array = np.zeros_like(attack_count_array)
+            wasted_time_array = np.zeros_like(attack_count_array)
 
-            # Reduced Titan counts and equivalent attacks as per splash reduction.
-            attack_damage = dps[idx]/attack_rate
-            damage_splashed = np.maximum(0, 
-                attack_damage-stage.titan_hp[idx])*self.splash_damage
-            splash_factor = np.floor(np.minimum(3, 
-                damage_splashed/stage.titan_hp[idx]))+1
-            remaining_titans = np.ceil(stage.titan_count[idx]/splash_factor)
-            attacks_per_titan = (np.ceil(
-                 np.maximum(1, stage.titan_hp[idx]/attack_damage)))
-            # Boss attack counting.
-            attacks_required = np.ceil(stage.boss_hp[idx]/attack_damage)
-            attacks_per_boss = np.zeros_like(attacks_required)
-            # Count attacks made before first zip occurs at 10sec.
-            flash_zip_delay = 10
-            attacks_before_delay = np.floor(flash_zip_delay*attack_rate)
-            attacks_per_boss = np.minimum(attacks_before_delay, attacks_required)
-            # Subtract the zip; Each zip level counts as zip_equivalent attacks.
-            zip_equivalent = use_zip*np.floor(15*self.flash_zip
-                * self.pet_attack_damage_array[idx]/attack_damage)
-            attacks_remaining = np.maximum(0, 
-                attacks_required-attacks_per_boss-zip_equivalent)
-            # Sum the remaining attacks up until the second zip at 30sec.
-            attacks_until_next_zip = np.minimum(attacks_remaining, 
-                2*attacks_before_delay)
-            attacks_per_boss += attacks_until_next_zip
-            attacks_remaining -= attacks_until_next_zip
-            # Subtract second zip and sum remaining attacks. There are only remaining
-            # attacks after the 2nd zip for goofy calculations like Heavenly Strike.
-            attacks_per_boss += np.maximum(0, attacks_remaining-zip_equivalent)
-            # Attack times with an offset for the first attack made vs. each monster.
-            first_attack_delay = np.abs(np.maximum(1, 
-                np.ceil(SVM.killAnimationTime*attack_rate))/attack_rate
-                - SVM.killAnimationTime) + self.device_lag
-            time_per_titan = (first_attack_delay
-                + (attacks_per_titan-1)*attack_duration)
-            time_per_boss = (first_attack_delay  
-                + (attacks_per_boss-1)*attack_duration)
-            # Compute total times and attacks.
-            attack_count_array = attacks_per_titan*remaining_titans + attacks_per_boss
-            active_time_array = time_per_titan*remaining_titans + time_per_boss
-            wasted_time_array = SVM.killAnimationTime*(remaining_titans + 1)
-            return(attack_count_array, active_time_array, wasted_time_array)
+            # Average over a range of delays to reflect in-game imperfections.
+            # Doesn't seem like much of a bottleneck so left it in loop form.
+            for i, measurement_delay in enumerate(measurement_range):
+                delay_per_spawn = (SVM.killAnimationTime + measurement_delay
+                     + self.device_lag)
+                attack_duration = base_attack_duration + measurement_delay
+                attack_rate = 1/attack_duration
+
+                # Reduced Titan counts and equivalent attacks as per splash reduction.
+                attack_damage = dps[domain]/attack_rate
+                damage_splashed = np.maximum(0, 
+                    attack_damage-stage.titan_hp[domain])*self.splash_damage
+                splash_factor = np.floor(np.minimum(3, 
+                    damage_splashed/stage.titan_hp[domain]))+1
+                remaining_titans = np.ceil(stage.titan_count[domain]/splash_factor)
+                attacks_per_titan = (np.ceil(
+                     np.maximum(1, stage.titan_hp[domain]/attack_damage)))
+                # Boss attack counting.
+                attacks_required = np.ceil(stage.boss_hp[domain]/attack_damage)
+                attacks_per_boss = np.zeros_like(attacks_required)
+                # Count attacks made before first zip occurs at 10sec.
+                flash_zip_delay = 10
+                attacks_before_delay = np.floor(flash_zip_delay*attack_rate)
+                attacks_per_boss = np.minimum(attacks_before_delay, attacks_required)
+                # Subtract the zip; Each zip level counts as zip_equivalent attacks.
+                zip_equivalent = use_zip*np.floor(15*self.flash_zip
+                    * self.pet_attack_damage_array[domain]/attack_damage)
+                attacks_remaining = np.maximum(0, 
+                    attacks_required-attacks_per_boss - zip_equivalent)
+                # Sum the remaining attacks up until the second zip at 30sec.
+                attacks_until_next_zip = np.minimum(attacks_remaining, 
+                    2*attacks_before_delay)
+                attacks_per_boss += attacks_until_next_zip
+                attacks_remaining -= attacks_until_next_zip
+                # Subtract second zip and sum remaining attacks. There are only remaining
+                # attacks after the 2nd zip for goofy calculations like Heavenly Strike.
+                attacks_per_boss += np.maximum(0, attacks_remaining - zip_equivalent)
+                # Attack times with an offset for the first attack made vs. each monster.
+                first_attack_delay = np.abs(np.maximum(1, 
+                    np.ceil(delay_per_spawn*attack_rate))/attack_rate
+                        - delay_per_spawn)
+                time_per_titan = (first_attack_delay
+                    + (attacks_per_titan - 1)*(attack_duration))
+                time_per_boss = (first_attack_delay  
+                    + (attacks_per_boss - 1)*(attack_duration))
+                # Compute total times and attacks.
+                attack_count_array[:, i] = attacks_per_titan*remaining_titans + attacks_per_boss
+                active_time_array[:, i] = time_per_titan*remaining_titans + time_per_boss
+                wasted_time_array[:, i] = delay_per_spawn*(remaining_titans + 1)
+
+            avg_attack_count = attack_count_array.sum(axis=1)/measurement_range.size
+            avg_active_time = active_time_array.sum(axis=1)/measurement_range.size
+            avg_wasted_time = wasted_time_array.sum(axis=1)/measurement_range.size
+            return(avg_attack_count, avg_active_time, avg_wasted_time)
 
         # Damage type dps for output display.
         self.melee_dps = self.hero_dps[heroes.melee_type].sum()
@@ -686,7 +705,7 @@ class Player(object):
 
         # Really important Heavenly Strike performance.
         if self.heavenly_strike>1:
-            strike_duration = 5.5
+            strike_duration = self.skill_durations[0] + self.skill_cooldowns[0]
             strike_dps = (self.heavenly_strike
                 * self.tap_with_avg_crit_array/strike_duration)
             attacks, active, wasted = performance_analysis(strike_duration,
@@ -910,33 +929,29 @@ class Player(object):
                 letters(self.general_performance[i, 0]).rjust(c2),
                 letters(self.general_performance[i, 1]).rjust(c3-5), 'mins',
                 letters(self.general_performance[i, 2]).rjust(c4-5), 'mins',
-                letters(self.general_performance[i, 1:].sum()).rjust(c5-5), 'mins'
-                + (' \u2020' if duration==SVM.killAnimationTime else ''))
+                letters(self.general_performance[i, 1:].sum()).rjust(c5-5), 'mins')
         print(hline)  
         if self.tap_performance[0]:
-            print('\t'+'Tap Attacks:'.ljust(c1),
+            print('\t'+'Tap Attacks'.ljust(c1),
                 letters(self.tap_performance[0]).rjust(c2),
                 str('%.2f'%self.tap_performance[1].sum()).rjust(c3-5),'days',
                 str('%.2f'%self.tap_performance[2].sum()).rjust(c4-5),'days',
-                str('%.2f'%(self.tap_performance[1:].sum())).rjust(c5-5),'days',
-                '\u2021')
+                str('%.2f'%(self.tap_performance[1:].sum())).rjust(c5-5),'days')
         if self.hs_performance[0]:  
-            print('\t'+'Heav. Strikes:'.ljust(c1),
+            print('\t'+'Heav. Strikes'.ljust(c1),
                 letters(self.hs_performance[0]).rjust(c2),
                 str('%.2f'%self.hs_performance[1]).rjust(c3-5),'days',
                 str('%.2f'%self.hs_performance[2]).rjust(c4-5),'days',
-                str('%.2f'%self.hs_performance[1:].sum()).rjust(c5-5),'days',
-                '\u2021')
+                str('%.2f'%self.hs_performance[1:].sum()).rjust(c5-5),'days')
         if self.pet_performance[0]:
-            print('\t'+'Pet Attacks:'.ljust(c1), 
+            print('\t'+'Pet Attacks'.ljust(c1), 
                 letters(self.pet_performance[0]).rjust(c2),
                 str('%.2f'%self.pet_performance[1]).rjust(c3-5),'mins',
                 str('%.2f'%self.pet_performance[2]).rjust(c4-5),'mins',
                 str('%.2f'%(self.pet_performance[1:].sum())).rjust(c5-5),'mins')
-        print(hline)
-        print('\t\u2020 Monster death animation delay:',
-            SVM.killAnimationTime, 'sec')
-        print('\t\u2021 Assumes unlimited time for boss fights.')
+        print(hline)  
+        print('\tKillAnimationTime + DeviceLag:', 
+            SVM.killAnimationTime+self.device_lag, 'sec')
 
 
 def run_simulation(input_csv, silent=False):
@@ -963,7 +978,7 @@ def run_simulation(input_csv, silent=False):
 if __name__ == '__main__':
     player, stage = run_simulation('YourUsername.csv')
 
-    #plot_dps_vs_bosshp(player, stage)
-    #plot_tap_damage(player, stage)
-    #plot_dps(player, stage)
-    #plot_splash(player, stage)
+    plot_dps_vs_bosshp(player, stage)
+    plot_tap_damage(player, stage)
+    plot_dps(player, stage)
+    plot_splash(player, stage)

@@ -27,34 +27,44 @@ There is great potential for model analysis using TT2-Sim. A full overview of va
 # Sample Text Output
 
 ```
-    GENERAL RESULTS:
+    GENERAL RESULTS FOR: MetxChris
     ―――――――――――――――――――――――――――――――――――――――――
-    Final Stage: 3510       Boss HP:  15.56cj
-    Start Stage: 1000       Damage:   11.07cj
+    Final Stage: 3875       Boss HP: 367.89cp
+    Start Stage: 1100       Damage:  207.14cp
     ――――――――――――――――――――――――――――――――――――――――――――――――――――――
     Hero Levels: [4000 4000 4000 4000 4000 4000 4000 4000] 
                  [4000 4000 4000 4000 4000 4000 4000 4000] 
                  [4000 4000 4000 4000 4000 4000 4000 4000] 
-                 [4000 4000 4000 4000 4000 3850 3490 3140] 
-                 [2800 2370 1870 1870 1870] Total: 137260
+                 [4000 4000 4000 4000 4000 4000 4000 3800] 
+                 [3460 3040 2540 2540 2540] Total: 141920
+
+
+    ACTIVE SKILL INFO:
+    ―――――――――――――――――――――――――――――――――――――
+    Name              Level       Effect 
+    ―――――――――――――――――――――――――――――――――――――
+    Crit Strike          15        50.00%
+    Hand of Midas        15         13.80
+    War Cry              15         1.03k
+    ―――――――――――――――――――――――――――――――――――――
 
 
     DAMAGE RESULTS:
     ―――――――――――――――――――――――――――――――――――――――
     Type            Amount        Bonus    
     ―――――――――――――――――――――――――――――――――――――――
-    Total DPS         43.41ci      11.40ab%
-    Hero DPS          97.46cg        8.94M%
-    Melee DPS         97.43cg        1.19B%
-    Ranged DPS        22.31cf      202.89k%
-    Spell DPS:        12.08cf      110.12k%
-    Pet DMG:          32.56ci       90.28M%
-    Tap DMG:           1.56cg      212.17k%
-    Clan DMG:        974.61cg        4.07T%
+    Total DPS        812.34co      11.40ab%
+    Hero DPS         731.75cm       16.00B%
+    Melee DPS        731.49cm        1.19B%
+    Ranged DPS       167.02cl      202.89k%
+    Spell DPS:        90.67cl      110.12k%
+    Pet DMG:         609.24co       90.28M%
+    Tap DMG:          11.71cm      212.17k%
+    Clan DMG:          7.32cn        4.07T%
     ―――――――――――――――――――――――――――――――――――――――
-    Crit Chance:                     26.00%
-    Crit Max:          148.00
-    Crit Min:           22.20
+    Crit Chance:                     50.00%
+    Crit Max:          196.99
+    Crit Min:           29.55
     ―――――――――――――――――――――――――――――――――――――――
     Artifact:                      377.07k%
 
@@ -63,15 +73,15 @@ There is great potential for model analysis using TT2-Sim. A full overview of va
     ―――――――――――――――――――――――――――――――――――――――
     Type             Amount      Multiplier
     ―――――――――――――――――――――――――――――――――――――――
-    Total Earned      12.85cl        10.75k
-    Boss Gold          9.99cl        200.80
-    Chest Gold         1.44cl         40.70
-    Titan Gold         1.43cl         58.13
+    Total Earned     550.76cs        10.75k
+    Boss Gold        547.07cs        200.80
+    Chest Gold         3.54cs         40.70
+    Titan Gold       149.82cr         58.13
     TF Chance           1.00%          1.02 †
     10x Chance         22.00%          2.98 ‡
     ―――――――――――――――――――――――――――――――――――――――
-    Remaining          6.68cl
-    Spent              6.17cl
+    Remaining         23.05cs
+    Spent            527.71cs
     ―――――――――――――――――――――――――――――――――――――――
     † Does not multiply with HoM or Bosses.
     ‡ Does not multiply with HoM.
@@ -81,51 +91,52 @@ There is great potential for model analysis using TT2-Sim. A full overview of va
     ――――――――――――――――――――――――――――――――――――――――――――――――――――
     Splash Amount    Maximum Splash       Minimum Splash
     ――――――――――――――――――――――――――――――――――――――――――――――――――――
-              x20              3284                 3222
-               x4              3334                 3275
-               x3              3336                 3277
-               x2              3357                 3300
-               x1              3360                 3303
+              x20              3695                 3553
+               x4              3727                 3686
+               x3              3729                 3709
+               x2              3731                 3711
+               x1              3754                 3714
     ――――――――――――――――――――――――――――――――――――――――――――――――――――
     Splash Factor: 0.0636
 
 
     HERO EVOLVE STAGES:
     ――――――――――――――――――――――――――――――――――――――――――――――――――――――
-    1st Evolve:  [1000 1000 1000 1000 1000 1000 1000 1000] 
-                 [1000 1000 1000 1000 1000 1000 1000 1000] 
-                 [1000 1000 1000 1000 1000 1000 1000 1000] 
-                 [1001 1064 1186 1344 1518 1727 1955 2180] 
-                 [2398 2670 2984 2984 2984]
-    2nd Evolve:  [1041 1056 1066 1080 1097 1116 1135 1150] 
-                 [1170 1188 1201 1220 1239 1264 1276 1299] 
-                 [1320 1350 1376 1409 1433 1467 1510 1559] 
-                 [1616 1704 1826 1981 2156 2365 2594 2819] 
-                 [3035 3309    0    0    0]
+    1st Evolve:  [1100 1100 1100 1100 1100 1100 1100 1100] 
+                 [1100 1100 1100 1100 1100 1100 1100 1100] 
+                 [1100 1100 1100 1100 1100 1100 1100 1100] 
+                 [1100 1101 1121 1281 1456 1665 1893 2119] 
+                 [2336 2610 2923 2923 2923]
+    2nd Evolve:  [1100 1101 1101 1101 1101 1101 1101 1101] 
+                 [1110 1126 1139 1156 1176 1204 1215 1236] 
+                 [1256 1287 1315 1346 1371 1405 1447 1496] 
+                 [1554 1641 1764 1919 2094 2303 2532 2758] 
+                 [2973 3247 3562 3562 3562]
 
 
-    ATTACKS AND TIMES TO REACH STAGE: 3510
+    ATTACKS AND TIMES TO REACH STAGE: 3875
     ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
     Attack Interval    Attacks      Active Time      Wasted Time       Total Time
     ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-            0.1 sec     46.11k       93.51 mins       62.16 mins      155.67 mins
-            0.2 sec     26.93k      106.01 mins       61.03 mins      167.04 mins
-            0.3 sec     20.40k       88.89 mins       60.37 mins      149.26 mins †
-            0.4 sec     17.33k      102.54 mins       59.97 mins      162.51 mins
-            0.5 sec     15.34k      114.96 mins       59.65 mins      174.61 mins
-            0.6 sec     13.96k      126.83 mins       59.38 mins      186.21 mins
-            0.8 sec     12.37k      152.24 mins       58.95 mins      211.19 mins
-            1.0 sec     11.41k      177.56 mins       58.63 mins      236.19 mins
-            1.5 sec     10.08k      239.50 mins       58.08 mins      297.58 mins
-            2.0 sec      9.47k      303.35 mins       57.69 mins      361.04 mins
-            3.0 sec      8.75k      425.54 mins       57.09 mins      482.63 mins
+            0.1 sec     46.05k       79.67 mins      144.65 mins      224.32 mins
+            0.2 sec     29.21k       94.25 mins      143.05 mins      237.30 mins
+            0.3 sec     22.88k      111.67 mins      142.12 mins      253.79 mins
+            0.4 sec     19.51k       90.07 mins      141.45 mins      231.52 mins
+            0.5 sec     17.45k      120.75 mins      140.92 mins      261.67 mins
+            0.6 sec     16.03k      151.08 mins      140.48 mins      291.56 mins
+            0.7 sec     15.01k       66.73 mins      140.09 mins      206.82 mins
+            0.8 sec     14.26k       81.61 mins      139.82 mins      221.43 mins
+            0.9 sec     13.64k       96.19 mins      139.57 mins      235.76 mins
+            1.0 sec     13.17k      111.04 mins      139.38 mins      250.42 mins
+            1.5 sec     11.70k      184.46 mins      138.34 mins      322.80 mins
+            2.0 sec     10.91k      256.02 mins      137.69 mins      393.71 mins
+            3.0 sec     10.16k      401.09 mins      136.69 mins      537.78 mins
     ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-    Tap Attacks:         6.79B     3928.89 days        0.05 days     3928.94 days ‡
-    Heav. Strikes:     370.95k       23.60 days        0.05 days       23.65 days ‡
-    Pet Attacks:        12.75k      146.68 mins       59.08 mins      205.76 mins
+    Tap Attacks          5.99B     4915.52 days        0.13 days     4915.65 days
+    Heav. Strikes      461.31k       21.40 days        0.11 days       21.51 days
+    Pet Attacks         14.60k       74.01 mins      139.97 mins      213.98 mins
     ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-    † Monster death animation delay: 0.3 sec
-    ‡ Assumes unlimited time for boss fights.
+    KillAnimationTime + DeviceLag: 0.7 sec
 ```
 
 # Credit
