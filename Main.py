@@ -42,8 +42,7 @@ This code reflects v1.3 of Tap Titans 2.
     this too is left out.
 
 4. Equipment/Pet Bonuses in Use:
-    All Equipment bonuses are used and All pet bonuses should be in play
-    other than for Fluffers.
+    All Equipment bonuses are used and All pet bonuses should be in play.
 """
 
 class Player(object):
@@ -108,6 +107,9 @@ class Player(object):
         self.general_attacks = np.zeros((len(self.attack_durations), stage.number.size))
         self.active_time = np.zeros((len(self.attack_durations), stage.number.size))
         self.wasted_time = np.zeros((len(self.attack_durations), stage.number.size))
+        self.regen_performance = np.zeros((len(self.attack_durations), stage.number.size))
+        self.siphon_performance = np.zeros((len(self.attack_durations), stage.number.size))
+        self.manni_performance = np.zeros((len(self.attack_durations), stage.number.size))
         self.general_performance = np.zeros((len(self.attack_durations), 3))
         self.pet_performance = np.zeros(3, dtype=np.float)
         self.hs_performance = np.zeros(3, dtype=np.float)
@@ -154,6 +156,7 @@ class Player(object):
         self.mana_capacity_array = np.zeros_like(stage.number, dtype=np.float)
         self.mana_regen_array = np.zeros_like(stage.number, dtype=np.float)
         self.mana_siphon_array = np.zeros_like(stage.number, dtype=np.float)
+        self.transition_array =  np.zeros_like(stage.number)
 
         # Clan Quest Bonus.
         self.clan_bonus = (SVM.clanBonusBase
@@ -237,8 +240,8 @@ class Player(object):
         self.cost_reduction = artifacts.cost_reduction
 
         # Mana bonuses.
-        self.base_mana_regen = pets.mana_regen + skill_tree.mana_regen 
-        self.mana_siphon = skill_tree.mana_siphon
+        self.base_mana_regen = 2 + pets.mana_regen + skill_tree.mana_regen 
+        self.mana_siphon = skill_tree.mana_siphon/100
         self.base_mana_capacity = 35*6 + skill_tree.mana_capacity
         self.manni_mana = skill_tree.manni_mana
 
@@ -654,33 +657,33 @@ class Player(object):
                 time_per_boss = (first_attack_delay  
                     + (attacks_per_boss - 1)*(attack_duration))
                 # Compute total times and attacks.
-                attack_count_array[:, i] = attacks_per_titan*remaining_titans + attacks_per_boss
+                attack_count_array[:, i] = (attacks_per_titan*remaining_titans
+                    + attacks_per_boss)
                 active_time_array[:, i] = time_per_titan*remaining_titans + time_per_boss
                 wasted_time_array[:, i] = delay_per_spawn*(remaining_titans + 1)
 
-            pure_attack_time = ((remaining_titans*stage.titan_hp[domain] + stage.boss_hp[domain])
-                / dps[domain])
+            # pure_attack_time = ((remaining_titans*stage.titan_hp[domain]
+            #     + stage.boss_hp[domain])/dps[domain])
             # Average values over the measurement range.
             avg_attack_count = attack_count_array.sum(axis=1)/measurement_range.size
             avg_active_time = active_time_array.sum(axis=1)/measurement_range.size
             avg_wasted_time = wasted_time_array.sum(axis=1)/measurement_range.size
-            return(avg_attack_count, avg_active_time, avg_wasted_time, pure_attack_time)
+            return(avg_attack_count, avg_active_time, avg_wasted_time, remaining_titans)
 
         # Damage type dps for output display.
         self.melee_dps = self.hero_dps[heroes.melee_type].sum()
         self.spell_dps = self.hero_dps[heroes.spell_type].sum()
         self.ranged_dps = self.hero_dps[heroes.ranged_type].sum()
 
-        # Transition Screen enjoyment.
-        transition_num = stage.transitions[self.start_stage:self.stage].sum()
-        transition_time = self.transition_delay*transition_num
+        attack_dps = self.total_dps_array[:, 0]
+        domain = (attack_dps>0)*(stage.number<self.stage)
+        self.transition_array[domain] = self.transition_delay*stage.transitions[domain]
+        transition_time = self.transition_array.sum()
 
         # Main Performance loop, calculate attacks and times of attack_durations.
         # We fix DPS per stage and alter attack rate to get dmg per attack.
-        attack_dps = self.total_dps_array[:, 0]
-        domain = (attack_dps>0)*(stage.number<self.stage)
         for i, attack_duration in enumerate(self.attack_durations):
-            attacks, active, wasted, pure = performance_analysis(attack_duration,
+            attacks, active, wasted, titans = performance_analysis(attack_duration,
                                                                  attack_dps,
                                                                  1)
             # Summed values used for printed output.
@@ -692,9 +695,17 @@ class Player(object):
             self.general_attacks[i, domain] = attacks
             self.active_time[i, domain] = active
             self.wasted_time[i, domain] = wasted
+            # Manni Mana performance
+            self.manni_performance[i, domain] = SVM.manaMonsterChance*titans*self.manni_mana
 
             # domain = (attack_dps>0)*(stage.number<self.stage)
             # stage_skill_start = np.minimum(stage.number[domain][pure>2], self.stage).min()
+
+        # Mana Regen/Siphon performance
+        self.regen_performance = (self.mana_regen_array*(self.active_time
+            +self.wasted_time+self.transition_array))/60
+        self.siphon_performance = (SVM.chanceForManaSteal*self.mana_capacity_array
+            *self.taps_sec*(self.active_time+self.wasted_time)*self.mana_siphon)
 
         # Pet Performance.
         if self.pet_rate:
@@ -743,6 +754,7 @@ class Player(object):
             min_splash = stage.number[condition]
             if min_splash.any():
                 self.min_splash_stages[i] = min_splash.min()-1
+
 
         """
         # Prestige Relic Efficiency (Not finished yet).
@@ -903,8 +915,8 @@ class Player(object):
             print('\n\n\t'+'SPLASH RESULTS BY STAGE (PET ATTACKS):')
             print(hline)
             print('\t'+'Splash Amount'.rjust(c1), 
-                'Maximum Splash'.rjust(c2),
-                'Minimum Splash'.rjust(c3))
+                'Splash Maximum'.rjust(c2),
+                'Splash Floor'.rjust(c3))
             print(hline)
             for i, splash_amount in enumerate(self.splash_amounts):
                 print('\t'+('x'+str(splash_amount)).rjust(c1),
@@ -989,11 +1001,13 @@ def run_simulation(input_csv, silent=False):
     player.print_results(data.stage, silent)
     return (player, data.stage)
 
+
 if __name__ == '__main__':
     player, stage = run_simulation('YourUsername.csv')
 
+    # Plotting.mana_regen_per_stage(player, stage)
     # Plotting.time_per_stage(player, stage)
     # Plotting.dps_vs_bosshp(player, stage)
     # Plotting.dps_vs_gold(player, stage)
     # Plotting.tap_damage(player, stage)
-    # Plotting.splash(player, stage)
+    # Plotting.splash(player, stage, max_splash=20)
