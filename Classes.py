@@ -16,8 +16,27 @@ set at the bottom of this code.
   
 class GameData(object):
     def __init__(self, input_file):
-        self.username = input_file.split('.')[0]
+
         self.input = np.genfromtxt('player\\'+input_file, delimiter=',', dtype=str)
+
+        def get_input(input_name):
+            # Pull general input values from PlayerInput.CSV.
+            start_idx = np.array([self.input[:,0]=='GENERAL INPUT VALUES']).argmax()+1
+            end_idx = np.array([self.input[start_idx:,0]=='']).argmax()+1
+            input_values = self.input[start_idx:end_idx,0].astype(np.float)
+            input_type = self.input[start_idx:end_idx,1]
+
+            # Avoids crashes if new input variables are missing.
+            if (input_type==input_name).any():
+                value = input_values[input_type==input_name][0]
+            else:
+                value = 0
+                print('WARNING: Missing player input value for:', input_name)
+                print(' '*8,'Please update your input csv to the most recent version.\n')
+            return value
+
+        self.username = input_file.split('.')[0]
+        self.scientific_notation = get_input('UseScientificNotation')
         self.artifacts = Artifacts(self.input)
         self.active_skills = ActiveSkills(self.input, self.artifacts)
         self.equipment = Equipment(self.input)
@@ -32,13 +51,13 @@ class GameData(object):
 
     def print_info(self, stage_skip_factor=100):
         print('INPUT VALUES FOR:', self.username)
-        self.active_skills.print_info()
-        self.artifacts.print_info()
-        self.equipment.print_info()
-        self.heroes.print_info()
-        self.pets.print_info()
-        self.skill_tree.print_info()
-        self.stage.print_info(stage_skip_factor)
+        self.active_skills.print_info(self.scientific_notation)
+        self.artifacts.print_info(self.scientific_notation)
+        self.equipment.print_info(self.scientific_notation)
+        self.heroes.print_info(self.scientific_notation)
+        self.pets.print_info(self.scientific_notation)
+        self.skill_tree.print_info(self.scientific_notation)
+        self.stage.print_info(stage_skip_factor, self.scientific_notation)
     
 
 class ActiveSkills(object):
@@ -81,7 +100,7 @@ class ActiveSkills(object):
                 self.mana_costs[i] = (int(csv_split[i+1, 9][level-1])
                     - artifacts.skill_cost_red[i])
 
-    def print_info(self):
+    def print_info(self, N=0):
         names = (['Heavenly Strike', 'Critical Strike', 'Hand of Midas',
             'Fire Sword', 'War Cry', 'Shadow Clone'])
         print('')
@@ -171,7 +190,7 @@ class Artifacts(object):
         for i, artifact in enumerate(cost_red_artifacts):
             self.skill_cost_red[i] = self.effect[self.name==artifact][0]
 
-    def print_info(self):
+    def print_info(self, N=0):
         print('')
         print('ARTIFACT NAME'.ljust(22),
             '\t'+'LEVEL'.rjust(5),
@@ -183,8 +202,8 @@ class Artifacts(object):
             print(name.ljust(22), 
                 '\t'+str(self.level[i]).rjust(5), 
                 '\t'+str('%.2f'%self.effect[i]).rjust(6), 
-                '\t'+letters(self.damage[i], '%').rjust(8))
-        print('Total Artifact Damage:', letters(self.total_damage, '%'))
+                '\t'+notate(self.damage[i], N, '%').rjust(8))
+        print('Total Artifact Damage:', notate(self.total_damage, N, '%'))
 
 
 class Equipment(object):
@@ -227,7 +246,7 @@ class Equipment(object):
         self.titan_hp = min(b, effects[(types=='TitanHP')*equipped])[0]
         self.tap_damage = max(b, effects[(types=='TapDamage')*equipped])[0]
 
-    def print_info(self):
+    def print_info(self, N=0):
         names = ('Sword',)*3+('Helmet',)*3+('Armor',)*2+('Aura',)*3+('Slash',)*2
         types = ('AllDamage', 'AllHeroDamage', 'CritDamage', 'MeleeDamage',
             'SpellDamage', 'RangedDamage', 'AllGold', 'ChestGold', 'CritChance',
@@ -272,17 +291,17 @@ class Heroes(object):
         self.spell_type = self.type=='Spell'
         self.ranged_type = self.type=='Ranged'
 
-    def print_info(self):
+    def print_info(self, N=0):
         print('')
         print('HEROES: NAME'.ljust(30), '\t'+'TYPE'.ljust(10),
             '\t'+'BASE COST'.rjust(9), '\t'+'W. LEVEL'.rjust(10),
             '\t'+'W. BONUS'.rjust(10))
         for i, name in enumerate(self.name):
             print(name.ljust(30), '\t'+self.type[i].ljust(10), 
-                '\t'+letters(self.purchase_cost[i]).rjust(9),
+                '\t'+notate(self.purchase_cost[i], N).rjust(9),
                 '\t'+str(self.weapon_levels[i]).rjust(10),
                 '\t'+str(self.weapon_bonus[i]).rjust(10))
-        print('Set Bonus:', 'x'+letters(self.set_bonus))
+        print('Set Bonus:', 'x'+notate(self.set_bonus), N)
 
 
 class HeroMultipliers(object):
@@ -367,7 +386,7 @@ class Pets(object):
         self.splash_damage = pet_bv[pet_bt=='SplashDamage'][0]
         self.mana_regen = pet_bv[pet_bt=='ManaRegen'][0]
 
-    def print_info(self):
+    def print_info(self, N=0):
         print('')
         print('PET NAME'.ljust(8), '\t'+'LEVEL'.rjust(5),
             '\t'+'P. BONUS'.rjust(8), '\t'+'P. DAMAGE'.rjust(9),
@@ -375,9 +394,9 @@ class Pets(object):
         for i, name in enumerate(self.name):
             print(name.ljust(8), '\t'+str(self.level[i]).rjust(5), 
                 '\t'+str("%.3f"%self.passive_bonus[i]).rjust(8), 
-                '\t'+letters(self.passive_damage[i],"%").rjust(9),  
+                '\t'+notate(self.passive_damage[i], N, "%").rjust(9),  
                 '\t'+str("%.2f"%self.active_bonus[i]).rjust(8),  
-                '\t'+letters(self.active_damage[i],"%").rjust(9))
+                '\t'+notate(self.active_damage[i], N, "%").rjust(9))
         print('Active Pet:', self.active_name)
         
 
@@ -428,7 +447,7 @@ class SkillTree(object):
         self.boss_timer = get_skill('BossTimer')
         self.tf_chance = get_skill('MultiMonsters')
 
-    def print_info(self):
+    def print_info(self, N=0):
         print('')
         print('SKILL TREE: NAME'.ljust(25), '\t'+'LEVEL'.rjust(5), '\t'+'EFFECT'.rjust(6))
         for i, j in enumerate(self.level):
@@ -495,7 +514,7 @@ class Stage(object):
         self.transitions = np.zeros_like(self.number)
         self.transitions[0::5] =  1
 
-    def print_info(self, stage_skip_factor):
+    def print_info(self, stage_skip_factor, N=0):
         # Print to screen all values of every stage_skip_factor stages.
         print('')
         print('STAGE'.rjust(5),
@@ -506,26 +525,26 @@ class Stage(object):
             '\t'+'RELICS'.rjust(7))
         for i in range(1, int(self.cap/stage_skip_factor)+1):
             print(str(i*stage_skip_factor).rjust(5),
-                '\t'+letters(self.titan_hp[i*stage_skip_factor]).rjust(10),
-                '\t'+letters(self.boss_hp[i*stage_skip_factor]).rjust(10),
-                '\t'+letters(self.base_titan_gold[i*stage_skip_factor]).rjust(10),
+                '\t'+notate(self.titan_hp[i*stage_skip_factor], N).rjust(10),
+                '\t'+notate(self.boss_hp[i*stage_skip_factor], N).rjust(10),
+                '\t'+notate(self.base_titan_gold[i*stage_skip_factor], N).rjust(10),
                 '\t'+str(self.titan_count[i*stage_skip_factor]).rjust(7),
                 '\t'+str(self.relics[i*stage_skip_factor]).rjust(7)) 
 
 
-def letters(sci_number, option=''):
+def notate(sci_number, use_sci=0, option=''):
     """
     Input: Any number, ideally one that requires scientific notation to display.
     Returns: String in the form of ###.##aa, where aa is the associated letter pair.
     """
 
+    if option.find('%')+1:
+        sci_number *= 100
+
     number_letter_dict = ({1:'a', 2:'b', 3:'c', 4:'d', 5:'e', 6:'f', 7:'g',
         8:'h', 9:'i', 10:'j', 11:'k', 12:'l', 13:'m', 14:'n', 15:'o', 16:'p',
         17:'q', 18:'r', 19:'s', 20:'t', 21:'u', 22:'v', 23:'w', 24:'x', 25:'y',
         26:'z', 27:'', 28:'k', 29:'M', 30:'B', 31:'T'})
-
-    if option.find('%')+1:
-        sci_number *= 100
 
     if sci_number>1:
         # Extract exponent value.
@@ -538,13 +557,17 @@ def letters(sci_number, option=''):
 
         # Convert exponent_value to letter format.
         if exp_whole_part <= 4: # sci_number < 10**15
-            letters = number_letter_dict[exp_whole_part+27]
+            notate = number_letter_dict[exp_whole_part+27]
         else: # sci_number >= 10**15
             key_decimal_part, key_whole_part = modf((exp_whole_part-5)/26)
-            letters = (number_letter_dict[round(key_whole_part+1)]
+            notate = (number_letter_dict[round(key_whole_part+1)]
                 + number_letter_dict[round(key_decimal_part*26+1)])
 
-        output = str("%.2f"%new_number)+letters
+        if use_sci and exp_whole_part>4:
+            output = str("%.2e"%sci_number).replace('+', '')
+        else:
+            output = str("%.2f"%new_number)+notate
+
     else:
         # Avoid errors from taking log(0).
         output = str("%.2f"%sci_number)

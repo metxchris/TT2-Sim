@@ -2,7 +2,7 @@ from __future__ import division, print_function
 import numpy as np
 from math import modf
 from copy import deepcopy
-from Classes import GameData, letters
+from Classes import GameData, notate
 from ServerVarsModel import SVM
 import Plotting
 
@@ -48,6 +48,7 @@ This code reflects v1.3 of Tap Titans 2.
 class Player(object):
 
     # These control what values are displayed in the printed results.
+    measurement_delay = 0.05
     splash_amounts = ([20, 4, 3, 2, 1])
     attack_durations = ([0.1, 0.2, 0.3, 0.4, 0.5, 0.6,
                          0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 3.0])
@@ -94,6 +95,7 @@ class Player(object):
         self.device_lag = get_input('DeviceLag')
         self.disable_heroes = get_input('DisableHeroes')
         self.disable_pet = get_input('DisablePet')
+        self.scientific_notation = data.scientific_notation
         self.username = data.username
 
         # Misc calculations.
@@ -603,7 +605,7 @@ class Player(object):
             
             domain = (dps>0)*(stage.number<self.stage)
             step_size = 0.01
-            max_measurement_delay = 0.05 + step_size
+            max_measurement_delay = self.measurement_delay + step_size
 
             # The max value used by the range is max_measurement_delay - step_size
             measurement_range = np.arange(0, max_measurement_delay, step_size)
@@ -616,7 +618,7 @@ class Player(object):
             for i, measurement_delay in enumerate(measurement_range):
                 delay_per_spawn = (SVM.killAnimationTime + measurement_delay
                      + self.device_lag)
-                attack_duration = base_attack_duration + measurement_delay
+                attack_duration = base_attack_duration
                 attack_rate = 1/attack_duration
 
                 # Reduced Titan counts and equivalent attacks as per splash reduction.
@@ -659,11 +661,14 @@ class Player(object):
                 # Compute total times and attacks.
                 attack_count_array[:, i] = (attacks_per_titan*remaining_titans
                     + attacks_per_boss)
-                active_time_array[:, i] = time_per_titan*remaining_titans + time_per_boss
-                wasted_time_array[:, i] = delay_per_spawn*(remaining_titans + 1)
+                active_time_array[:, i] = ((time_per_titan - measurement_delay)
+                    * remaining_titans + time_per_boss)
+                wasted_time_array[:, i] = ((delay_per_spawn + measurement_delay)
+                    * (remaining_titans + 1))
 
             # pure_attack_time = ((remaining_titans*stage.titan_hp[domain]
             #     + stage.boss_hp[domain])/dps[domain])
+
             # Average values over the measurement range.
             avg_attack_count = attack_count_array.sum(axis=1)/measurement_range.size
             avg_active_time = active_time_array.sum(axis=1)/measurement_range.size
@@ -684,8 +689,8 @@ class Player(object):
         # We fix DPS per stage and alter attack rate to get dmg per attack.
         for i, attack_duration in enumerate(self.attack_durations):
             attacks, active, wasted, titans = performance_analysis(attack_duration,
-                                                                 attack_dps,
-                                                                 1)
+                                                                   attack_dps,
+                                                                   1)
             # Summed values used for printed output.
             self.general_performance[i, 0] = attacks.sum().astype(int)
             self.general_performance[i, 1] = round(active.sum()/60, 2)
@@ -755,7 +760,6 @@ class Player(object):
             if min_splash.any():
                 self.min_splash_stages[i] = min_splash.min()-1
 
-
         """
         # Prestige Relic Efficiency (Not finished yet).
         base_relics = stage.relics[self.start_stage]
@@ -776,6 +780,8 @@ class Player(object):
         if silent_output:
             return
 
+        N = self.scientific_notation
+
         c1, c2 = (4, 8)
         hline = '\t'+'\u2015'*(c1+c2+29)
         hline2 = '\t'+'\u2015'*(c1+c2+42)
@@ -783,10 +789,10 @@ class Player(object):
         print(hline)
         print('\t'+'Final Stage:', str(self.stage).rjust(c1),
             '\t\t'+'Boss HP:',
-                letters(stage.boss_hp[self.stage]).rjust(c2))
+            notate(stage.boss_hp[self.stage], N).rjust(c2))
         print('\t'+'Start Stage:', str(self.start_stage).rjust(c1),
             '\t\t'+'Damage: ',
-                letters(self.total_boss_dps*self.boss_timer).rjust(c2))
+            notate(self.total_boss_dps*self.boss_timer, N).rjust(c2))
         if self.hero_level.max():
             print(hline2)
             print('\t'+'Hero Levels:', self.hero_level[:8],
@@ -808,23 +814,23 @@ class Player(object):
             if self.crit_strike:
                 print('\t'+'Crit Strike'.ljust(c1), 
                     str(self.skill_levels[1]).rjust(c2),
-                    letters(self.crit_strike, '%').rjust(c3))
+                    notate(self.crit_strike, N, '%').rjust(c3))
             if self.hom:
                 print('\t'+'Hand of Midas'.ljust(c1), 
                     str(self.skill_levels[2]).rjust(c2),
-                    letters(self.hom).rjust(c3))
+                    notate(self.hom, N).rjust(c3))
             if self.fire_sword>1:
                 print('\t'+'Fire Sword'.ljust(c1), 
                     str(self.skill_levels[3]).rjust(c2),
-                    letters(self.fire_sword).rjust(c3))        
+                    notate(self.fire_sword, N).rjust(c3))        
             if self.war_cry>1:
                 print('\t'+'War Cry'.ljust(c1), 
                     str(self.skill_levels[4]).rjust(c2),
-                    letters(self.war_cry).rjust(c3))
+                    notate(self.war_cry, N).rjust(c3))
             if self.shadow_clone:
                 print('\t'+'Shadow Clone'.ljust(c1), 
                     str(self.skill_levels[5]).rjust(c2),
-                    letters(self.shadow_clone).rjust(c3))
+                    notate(self.shadow_clone, N).rjust(c3))
             print(hline)
 
         c1, c2, c3 = (12, 12, 13)
@@ -836,41 +842,41 @@ class Player(object):
             '    Bonus'.ljust(c3))
         print(hline)
         print('\t'+'Total DPS'.ljust(c1), 
-            letters(self.total_dps).rjust(c2),
-            letters(self.all_damage-1, '%').rjust(c3))
+            notate(self.total_dps, N).rjust(c2),
+            notate(self.all_damage-1, N, '%').rjust(c3))
         print('\t'+'Hero DPS'.ljust(c1), 
-            letters(self.total_hero_dps).rjust(c2), 
-            letters(self.all_hero_damage-1, '%').rjust(c3))
+            notate(self.total_hero_dps, N).rjust(c2), 
+            notate(self.all_hero_damage-1, N, '%').rjust(c3))
         print('\t'+'Melee DPS'.ljust(c1), 
-            letters(self.melee_dps).rjust(c2),
-            letters(self.melee_mult-1, '%').rjust(c3))
+            notate(self.melee_dps, N).rjust(c2),
+            notate(self.melee_mult-1, N, '%').rjust(c3))
         print('\t'+'Ranged DPS'.ljust(c1), 
-            letters(self.ranged_dps).rjust(c2),
-            letters(self.ranged_mult-1, '%').rjust(c3))
+            notate(self.ranged_dps, N).rjust(c2),
+            notate(self.ranged_mult-1, N, '%').rjust(c3))
         print('\t'+'Spell DPS:'.ljust(c1), 
-            letters(self.spell_dps).rjust(c2),
-            letters(self.spell_mult-1, '%').rjust(c3))
+            notate(self.spell_dps, N).rjust(c2),
+            notate(self.spell_mult-1, N, '%').rjust(c3))
         print('\t'+'Pet DMG:'.ljust(c1), 
-            letters(self.pet_damage_per_attack).rjust(c2), 
-            letters(self.pet_mult-1, '%').rjust(c3))
+            notate(self.pet_damage_per_attack, N).rjust(c2), 
+            notate(self.pet_mult-1, N, '%').rjust(c3))
         print('\t'+'Tap DMG:'.ljust(c1), 
-            letters(self.tap_damage*self.fire_sword).rjust(c2), 
-            letters(self.tap_mult-1, '%').rjust(c3))
+            notate(self.tap_damage*self.fire_sword, N).rjust(c2), 
+            notate(self.tap_mult-1, N, '%').rjust(c3))
         print('\t'+'Clan DMG:'.ljust(c1), 
-            letters(self.ship_damage).rjust(c2), 
-            letters(self.clan_bonus-1, '%').rjust(c3))
+            notate(self.ship_damage, N).rjust(c2), 
+            notate(self.clan_bonus-1, N, '%').rjust(c3))
         print(hline)
         print('\t'+'Crit Chance:'.ljust(c1),
             ''.ljust(c2),
-            letters(self.crit_chance, '%').rjust(c3))
+            notate(self.crit_chance, N, '%').rjust(c3))
         print('\t'+'Crit Max:'.ljust(c1), 
-            letters(SVM.playerCritMaxMult*self.crit_damage).rjust(c2),)
+            notate(SVM.playerCritMaxMult*self.crit_damage, N).rjust(c2),)
         print('\t'+'Crit Min:'.ljust(c1), 
-            letters(SVM.playerCritMinMult*self.crit_damage).rjust(c2))
+            notate(SVM.playerCritMinMult*self.crit_damage, N).rjust(c2))
         print(hline)
         print('\t'+'Artifact:'.ljust(c1), 
             ''.ljust(c2),
-            letters(self.artifact_damage, '%').rjust(c3))
+            notate(self.artifact_damage, N, '%').rjust(c3))
         
         c1, c2, c3 = (16, 8, 13)
         hline = '\t'+'\u2015'*(c1+c2+c3+2)
@@ -881,30 +887,30 @@ class Player(object):
             'Multiplier'.rjust(c3))
         print(hline)
         print('\t'+'Total Earned'.ljust(c1), 
-            letters(self.gold_array.sum()).rjust(c2),
-            letters(self.all_gold).rjust(c3))
+            notate(self.gold_array.sum(), N).rjust(c2),
+            notate(self.all_gold, N).rjust(c3))
         print('\t'+'Boss Gold'.ljust(c1), 
-            letters(self.gold_array[:,0].sum()).rjust(c2),
-            letters(self.boss_gold).rjust(c3))
+            notate(self.gold_array[:,0].sum(), N).rjust(c2),
+            notate(self.boss_gold, N).rjust(c3))
         print('\t'+'Chest Gold'.ljust(c1), 
-            letters(self.gold_array[:,2].sum()).rjust(c2),
-            letters(self.chest_gold).rjust(c3))
+            notate(self.gold_array[:,2].sum(), N).rjust(c2),
+            notate(self.chest_gold, N).rjust(c3))
         print('\t'+'Titan Gold'.ljust(c1), 
-            letters(self.gold_array[:,1].sum()).rjust(c2),
-            letters(self.titan_gold).rjust(c3))
+            notate(self.gold_array[:,1].sum(), N).rjust(c2),
+            notate(self.titan_gold, N).rjust(c3))
         print('\t'+'TF Chance'.ljust(c1), 
-            letters(self.tf_chance, '%').rjust(c2),
-            letters(self.tf_bonus).rjust(c3),
+            notate(self.tf_chance, N, '%').rjust(c2),
+            notate(self.tf_bonus, N).rjust(c3),
             '\u2020')
         print('\t'+'10x Chance'.ljust(c1), 
-            letters(self.x10_gold_chance, '%').rjust(c2),
-            letters(1 + 9*self.x10_gold_chance).rjust(c3),
+            notate(self.x10_gold_chance, N, '%').rjust(c2),
+            notate(1 + 9*self.x10_gold_chance, N).rjust(c3),
             '\u2021')
         print(hline)
         print('\t'+'Remaining'.ljust(c1), 
-            letters(self.current_gold).rjust(c2)) 
+            notate(self.current_gold, N).rjust(c2)) 
         print('\t'+'Spent'.ljust(c1), 
-            letters(self.gold_spent).rjust(c2))
+            notate(self.gold_spent, N).rjust(c2))
         print(hline)
         print('\t\u2020 Does not multiply with HoM or Bosses.')
         print('\t\u2021 Does not multiply with HoM.')
@@ -952,32 +958,32 @@ class Player(object):
         print(hline)
         for i, duration in enumerate(self.attack_durations):
             print('\t'+(str(duration)+' sec').rjust(c1),
-                letters(self.general_performance[i, 0]).rjust(c2),
-                letters(self.general_performance[i, 1]).rjust(c3-5), 'mins',
-                letters(self.general_performance[i, 2]).rjust(c4-5), 'mins',
-                letters(self.general_performance[i, 1:].sum()).rjust(c5-5), 'mins')
+                notate(self.general_performance[i, 0], N).rjust(c2),
+                notate(self.general_performance[i, 1], N).rjust(c3-5), 'mins',
+                notate(self.general_performance[i, 2], N).rjust(c4-5), 'mins',
+                notate(self.general_performance[i, 1:].sum(), N).rjust(c5-5), 'mins')
         print(hline)  
         if self.tap_performance[0]:
             print('\t'+'Tap Attacks'.ljust(c1),
-                letters(self.tap_performance[0]).rjust(c2),
+                notate(self.tap_performance[0], N).rjust(c2),
                 str('%.2f'%self.tap_performance[1].sum()).rjust(c3-5),'days',
                 str('%.2f'%self.tap_performance[2].sum()).rjust(c4-5),'days',
                 str('%.2f'%(self.tap_performance[1:].sum())).rjust(c5-5),'days')
         if self.hs_performance[0]:  
             print('\t'+'Heav. Strikes'.ljust(c1),
-                letters(self.hs_performance[0]).rjust(c2),
+                notate(self.hs_performance[0], N).rjust(c2),
                 str('%.2f'%self.hs_performance[1]).rjust(c3-5),'days',
                 str('%.2f'%self.hs_performance[2]).rjust(c4-5),'days',
                 str('%.2f'%self.hs_performance[1:].sum()).rjust(c5-5),'days')
         if self.pet_performance[0]:
             print('\t'+'Pet Attacks'.ljust(c1), 
-                letters(self.pet_performance[0]).rjust(c2),
+                notate(self.pet_performance[0], N).rjust(c2),
                 str('%.2f'%self.pet_performance[1]).rjust(c3-5),'mins',
                 str('%.2f'%self.pet_performance[2]).rjust(c4-5),'mins',
                 str('%.2f'%(self.pet_performance[1:].sum())).rjust(c5-5),'mins')
         print(hline)  
-        print('\tKillAnimationTime + DeviceLag:', 
-            SVM.killAnimationTime+self.device_lag, 'sec')
+        print('\tKillAnimationTime + DeviceLag + MeasurementLag:', 
+            SVM.killAnimationTime+self.device_lag+self.measurement_delay, 'sec')
 
 
 def run_simulation(input_csv, silent=False):

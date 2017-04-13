@@ -9,6 +9,7 @@
         0.2,DeviceLag,(Seconds)
         0,DisableHeroes,
         0,DisablePet,(Still applies bonuses)
+        0,UseScientificNotation,
         ,,
     ACTIVE SKILL LEVELS, (LEVEL NAME ACTIVATED),
         15,HeavenlyStrike,ACTIVATED

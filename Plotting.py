@@ -1,6 +1,6 @@
 from __future__ import division, print_function
 import numpy as np
-from Classes import GameData, letters
+from Classes import GameData, notate
 from ServerVarsModel import SVM
 import matplotlib.pyplot as plt
 
@@ -135,7 +135,7 @@ def relic_efficiency(player, stage):
         ylim=(min(y[10:]), 1.1*max(y)))
     ax.set_xlabel('$\\rm Stage\ Number$', fontsize=10)
     ax.set_ylabel('${\\rm Relic\ Efficiency}$', fontsize=10)
-    max_efficiency = letters(max(player.relic_efficiency[:, 0]))
+    max_efficiency = notate(max(player.relic_efficiency[:, 0]))
     title = ('Most Efficient Stage: '
         + str((player.relic_efficiency[:, 0]).argmax())
         + '     Efficiency: '+ max_efficiency)
@@ -159,7 +159,6 @@ def time_per_stage(player, stage):
         ylim=(min(y1), max(y1.max(), y2.max(), y3.max())))
     ax.set_xlabel('$\\rm Stage\ Number$', fontsize=10)
     ax.set_ylabel('Time (s)', fontsize=10)
-    max_efficiency = letters(max(player.relic_efficiency[:, 0]))
     title = 'Time Per Stage'
     ax.set_title(title, fontsize=11, loc=('center'))
     ax.plot(x, y1, 'o', markersize=2, markeredgewidth=0.75, color='b',
@@ -180,11 +179,11 @@ def mana_regen_per_stage(player, stage):
     manni_exists = player.manni_mana
     x = stage.number[domain][4:]
 
-    def movingaverage (values, window):
+    def moving_average (values, window):
         weights = np.repeat(1.0, window)/window
         return np.convolve(values, weights, 'valid')
 
-    y1 = movingaverage(player.regen_performance[idx, :][domain], 5)
+    y1 = moving_average(player.regen_performance[idx, :][domain], 5)
     if siphon_exists:
         y2 = player.siphon_performance[idx, :][domain][4:]
     if manni_exists:

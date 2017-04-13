@@ -1,7 +1,7 @@
 This folder hosts the repository's [Wiki](https://metxchris.github.io/TT2-Sim/).
 
 # Todo List
-- [ ] Sci notation option (you heathens).
+- [x] Sci notation option (you heathens).
 - [ ] Finish relic efficiency and add slider plot.
 - [ ] Finish adding blue skill-tree skills.
 - [ ] Silent March simulations.
@@ -11,6 +11,9 @@ This folder hosts the repository's [Wiki](https://metxchris.github.io/TT2-Sim/).
 - [ ] Overhaul plotting file.
 
 # Update History
+###### 13 April 2017
+* Added scientific notation option.
+* Tweaked how time-table handles measurement lag.
 ###### 11 April 2017
 * Added plot for time spent per stage (use the zoom and pan tools).
 * Added plot for mana gained per stage (use the zoom and pan tools).
