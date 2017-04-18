@@ -184,14 +184,19 @@ def mana_regen_per_stage(player, stage):
         return np.convolve(values, weights, 'valid')
 
     y1 = moving_average(player.regen_performance[idx, :][domain], 5)
+    minY, maxY = y1.min(), y1.max()
     if siphon_exists:
         y2 = player.siphon_performance[idx, :][domain][4:]
+        minY = min(minY, y2.min())
+        maxY = max(maxY, y2.max())
     if manni_exists:
         y3 = player.manni_performance[idx, :][domain][4:]
+        minY = min(minY, y3.min())
+        maxY = max(maxY, y3.max())
     fig = plt.figure(figsize=(6*0.75, 4.5*0.75))
     ax = fig.add_subplot(111, 
         xlim=(min(x), max(x)),
-        ylim=(0.99*min(y1.min(), y2.min(), y3.min()), 1.01*max(y1.max(), y2.max(), y3.max())))
+        ylim=(0.99*minY, 1.01*maxY))
     ax.set_xlabel('$\\rm Stage\ Number$', fontsize=10)
     ax.set_ylabel('Mana', fontsize=10)
     title = 'Mana Gain Per Stage, Interval: '+str(player.attack_durations[idx])+'s'
