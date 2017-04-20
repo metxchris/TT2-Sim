@@ -6,6 +6,7 @@ player/*.csv
 !player/YourUsername.csv
 InactiveModel.py
 MainTest.py
+GoldToDamage.py
 
 #################
 ## Eclipse
