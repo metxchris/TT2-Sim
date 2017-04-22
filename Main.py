@@ -770,7 +770,7 @@ class Player(object):
         for i, __ in enumerate(total_time[0, :]):
             j = i + self.start_stage
             summed_time += total_time[:, i]
-            self.relic_efficiency[:, j+1] = (stage.relics[j+1]-base_relics)/summed_time
+            self.relic_efficiency[:, j] = (stage.relics[j]-base_relics)/summed_time
 
 
     def print_results(self, stage, silent_output):
@@ -1013,7 +1013,6 @@ def run_simulation(input_csv, silent=False):
 if __name__ == '__main__':
     player, stage = run_simulation('YourUsername.csv')
 
-    # Uncomment Plotting commands to show plots.
     # Plotting.relic_efficiency(player, stage)
     # Plotting.mana_regen_per_stage(player, stage)
     # Plotting.time_per_stage(player, stage)

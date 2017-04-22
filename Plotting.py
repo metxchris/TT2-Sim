@@ -152,7 +152,7 @@ def relic_efficiency(player, stage):
     ax.set_xlabel('$\\rm Stage\ Number$', fontsize=10)
     ax.set_ylabel('${\\rm Relic\ Efficiency}$', fontsize=10)
     max_efficiency = y1.max()
-    max_efficiency_stage = y1.argmax() + 1 + player.start_stage
+    max_efficiency_stage = y1.argmax() + 2 + player.start_stage
     title = ('Most Efficient Stage: '
         + str(max_efficiency_stage)+','
         + '  Efficiency: '+ str(round(max_efficiency, 2)))
