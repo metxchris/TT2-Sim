@@ -147,7 +147,7 @@ class Player(object):
         self.gold_spent = 0
 
         # Values stored for each stage.
-        self.relic_efficiency = np.zeros((stage.number.size, 2), dtype=np.float)
+        self.relic_efficiency = np.zeros_like(self.active_time)
         self.pet_attack_damage_array = np.zeros_like(stage.number, dtype=np.float)
         self.tap_with_avg_crit_array = np.zeros_like(stage.number, dtype=np.float)
         self.tap_damage_array = np.zeros((stage.number.size, 2), dtype=np.float)
@@ -760,16 +760,18 @@ class Player(object):
             if min_splash.any():
                 self.min_splash_stages[i] = min_splash.min()-1
 
-        """
-        # Prestige Relic Efficiency (Not finished yet).
+        # Prestige Relic Efficiency.
+        domain = (attack_dps>0)
+        interval_idx = 4
+        total_time = (self.active_time[:, domain] 
+            + self.wasted_time[:, domain] + self.transition_array[domain])
         base_relics = stage.relics[self.start_stage]
-        total_attacks = 0
-        for i, attacks in enumerate(self.#removed):
-            j = i + self.start_stage + 1
-            total_attacks += self.pet_rate*attacks
-            self.relic_efficiency[j, 0] = (stage.relics[j]-base_relics)/total_attacks
-            self.relic_efficiency[j, 1] = stage.relics[j]/total_attacks
-        """
+        summed_time = np.zeros(len(self.attack_durations))
+        for i, __ in enumerate(total_time[0, :]):
+            j = i + self.start_stage
+            summed_time += total_time[:, i]
+            self.relic_efficiency[:, j+1] = (stage.relics[j+1]-base_relics)/summed_time
+
 
     def print_results(self, stage, silent_output):
         """
@@ -1011,6 +1013,8 @@ def run_simulation(input_csv, silent=False):
 if __name__ == '__main__':
     player, stage = run_simulation('YourUsername.csv')
 
+    # Uncomment Plotting commands to show plots.
+    # Plotting.relic_efficiency(player, stage)
     # Plotting.mana_regen_per_stage(player, stage)
     # Plotting.time_per_stage(player, stage)
     # Plotting.dps_vs_bosshp(player, stage)

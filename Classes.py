@@ -486,7 +486,7 @@ class Stage(object):
             * SVM.monsterHPBase1**np.minimum(self.number, SVM.monsterHPLevelOff)
             * SVM.monsterHPBase2**np.maximum(self.number-SVM.monsterHPLevelOff, 0)
             * hp_multiplier)
-
+        
         self.boss_hp = (self.titan_hp
             * np.minimum(SVM.bossHPModBase**(self.number/200), 2.5))
         self.boss_hp[1::5] *= SVM.themeMultiplierSequence[0] # x1, x6 stages

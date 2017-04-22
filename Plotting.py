@@ -12,21 +12,21 @@ def dps_vs_bosshp(player, stage):
     
     domain = player.total_dps_array[:, 0]>0
     x = stage.number[domain][::5]
-    y1 = np.log(player.total_dps_array[:, 0][domain][::5])
-    y2 = np.log(stage.boss_hp[domain][::5])
+    y1 = player.total_dps_array[:, 0][domain][::5]
+    y2 = stage.boss_hp[domain][::5]
     fig = plt.figure(figsize=(0.75*6, 0.75*4.5))
     ax = fig.add_subplot(111, 
         xlim=(min(x), max(x)),
         ylim=(np.minimum(y1, y2).min(), np.maximum(y1, y2).max()))
-    ax.set_xlabel('$\\rm Stage Number$', fontsize=10)
-    ax.set_ylabel('$\\rm \log{(Amount)}$', fontsize=10)
-    ax.set_title('$\\rm \log{(Total\ DPS)}\ vs. \log{(Boss\ HP)}$',
+    ax.set_xlabel('Stage Number', fontsize=10)
+    ax.set_ylabel('Amount', fontsize=10)
+    ax.set_title('DPS and Boss HP vs. Stage',
         fontsize=11, loc=('center'))
-    ax.plot(x, y1,
-        'o',markersize=3, markeredgewidth=0.5, color='b',
+    ax.semilogy(x, y1,
+        'o',markersize=3, markeredgewidth=0.75, color='b',
         fillstyle='none', label='Total DPS')
     ax.plot(x, y2,
-        'x',markersize=3, markeredgewidth=0.5, color='r',
+        'x',markersize=3, markeredgewidth=0.75, color='r',
         fillstyle='none', label='Boss HP')
     legend = ax.legend(loc='upper left', frameon=False)
     plt.tight_layout()
@@ -37,17 +37,17 @@ def tap_damage(player, stage):
     domain2 = player.tap_damage_array[:, 1]>0
     x1 = stage.number[domain1][::5]
     x2 = stage.number[domain2][::5]
-    y1 = np.log(player.tap_damage_array[:, 0][domain1][::5])
-    y2 = np.log(player.tap_damage_array[:, 1][domain2][::5])
+    y1 = player.tap_damage_array[:, 0][domain1][::5]
+    y2 = player.tap_damage_array[:, 1][domain2][::5]
     fig = plt.figure(figsize=(6*0.75, 4.5*0.75))
     ax = fig.add_subplot(111, 
         xlim=(min(x1), max(x1)),
         ylim=(min(y1), max(y1)))
-    ax.set_xlabel('$\\rm Stage$', fontsize=10)
-    ax.set_ylabel('$\\rm \log{(Damage)}$', fontsize=10)
-    ax.set_title('$\\rm Tap\ Damage\ Comparison$',
+    ax.set_xlabel('Stage', fontsize=10)
+    ax.set_ylabel('Damage', fontsize=10)
+    ax.set_title('Tap Damage Comparison',
         fontsize=11, loc=('center'))
-    ax.plot(x1, y1,
+    ax.semilogy(x1, y1,
         'o',markersize=3, markeredgewidth=0.75, color='b',
         fillstyle='none', label='Sword Master + Tap from Heroes')
     ax.plot(x2, y2,
@@ -63,27 +63,43 @@ def dps_vs_gold(player, stage):
 
     domain = player.total_dps_array[:, 0]>0
     x = stage.number[domain][::5]
-    y1 = np.log(player.tap_dps_array[domain][::5])
-    y2 = np.log(player.hero_dps_array[domain][::5])
-    y3 = np.log(pet_dps_array[domain][::5])
-    y4 = np.log(player.gold_array[domain][::5].sum(axis=1))
+    y1 = player.tap_dps_array[domain][::5]
+    y2 = player.hero_dps_array[domain][::5]
+    y3 = pet_dps_array[domain][::5]
+    y4 = player.gold_array[domain][::5].sum(axis=1)
 
     fig = plt.figure(figsize=(0.75*6, 0.75*4.5))
     ax = fig.add_subplot(111, 
         xlim=(min(x), max(x)),
         ylim=(min(y1), max(y4)))
     ax.set_xlabel('$\\rm Stage$', fontsize=10)
-    ax.set_ylabel('$\\rm \log{(DPS)}$', fontsize=10)
+    ax.set_ylabel('Amount', fontsize=10)
     ax.set_title('DPS Type and Gold Comparison at '+tap_rate+' taps/s',
         fontsize=11, loc=('center'))
-    ax.plot(x, y1, '-',markersize=3, markeredgewidth=0.75, color='b',
-        fillstyle='none', label='Tap DPS')
-    ax.plot(x, y2, '--',markersize=3, markeredgewidth=0.5, color='r',
-        fillstyle='none', label='Hero DPS')
-    ax.plot(x, y3, '-.',markersize=3, markeredgewidth=0.5, color='g',
-        fillstyle='none', label='Pet DPS')
-    ax.plot(x, y4, ':',markersize=3, markeredgewidth=0.5, color='m',
-        fillstyle='none', label='Gold')
+    ax.semilogy(x, y1, '-',
+        markersize=3, 
+        markeredgewidth=0.75, 
+        color='b',
+        fillstyle='none', 
+        label='Tap DPS')
+    ax.plot(x, y2, '--',
+        markersize=3, 
+        markeredgewidth=0.5, 
+        color='r',
+        fillstyle='none', 
+        label='Hero DPS')
+    ax.plot(x, y3, '-.',
+        markersize=3, 
+        markeredgewidth=0.5, 
+        color='g',
+        fillstyle='none', 
+        label='Pet DPS')
+    ax.plot(x, y4, ':',
+        markersize=3, 
+        markeredgewidth=0.5, 
+        color='m',
+        fillstyle='none', 
+        label='Gold')
     legend = ax.legend(loc='upper left', frameon=False, fontsize=9)
     plt.tight_layout()
     plt.show()
@@ -126,47 +142,46 @@ def splash(player, stage, max_splash=20):
 def relic_efficiency(player, stage):
     """ This calc isn't finished yet. """
 
-    domain = player.relic_efficiency[:, 0]>0
+    domain = player.relic_efficiency[0, :]>0
     x = stage.number[domain]
-    y = player.relic_efficiency[:, 0][domain]
+    y1 = player.relic_efficiency[4, domain]
     fig = plt.figure(figsize=(6*0.75, 4.5*0.75))
     ax = fig.add_subplot(111, 
         xlim=(min(x), max(x)),
-        ylim=(min(y[10:]), 1.1*max(y)))
+        ylim=(min(y1[10:]), 1.01*max(y1)))
     ax.set_xlabel('$\\rm Stage\ Number$', fontsize=10)
     ax.set_ylabel('${\\rm Relic\ Efficiency}$', fontsize=10)
-    max_efficiency = notate(max(player.relic_efficiency[:, 0]))
+    max_efficiency = y1.max()
+    max_efficiency_stage = y1.argmax() + 1 + player.start_stage
     title = ('Most Efficient Stage: '
-        + str((player.relic_efficiency[:, 0]).argmax())
-        + '     Efficiency: '+ max_efficiency)
+        + str(max_efficiency_stage)+','
+        + '  Efficiency: '+ str(round(max_efficiency, 2)))
     ax.set_title(title, fontsize=11, loc=('center'))
-    ax.plot(x, y, 'o', markersize=2, markeredgewidth=0.5, color='b',
-        fillstyle='none')
+    ax.plot(x, y1, '-', markersize=2, markeredgewidth=0.5, color='b',
+        fillstyle='none', label=str(player.attack_durations[4])+'s interval')
+    legend = ax.legend(loc='best', frameon=False, fontsize=9)
     plt.tight_layout()
     plt.show()
 
 def time_per_stage(player, stage):
     # self.attack_durations must have at least 5 elements for this to work.
     domain = player.active_time[0, :]>0
+    i1 = 4
     x = stage.number[domain]
-    i1, i2, i3 = 4, -2, -1
     y1 = player.active_time[i1, :][domain] + player.wasted_time[i1, :][domain]
-    y2 = player.active_time[i2, :][domain] + player.wasted_time[i2, :][domain]
-    y3 = player.active_time[i3, :][domain] + player.wasted_time[i3, :][domain]
+    sec60 = 60*np.ones_like(x)
     fig = plt.figure(figsize=(6*0.75, 4.5*0.75))
     ax = fig.add_subplot(111, 
         xlim=(min(x), max(x)),
-        ylim=(min(y1), max(y1.max(), y2.max(), y3.max())))
+        ylim=(min(1, y1.min()), max(y1)))
     ax.set_xlabel('$\\rm Stage\ Number$', fontsize=10)
     ax.set_ylabel('Time (s)', fontsize=10)
     title = 'Time Per Stage'
     ax.set_title(title, fontsize=11, loc=('center'))
-    ax.plot(x, y1, 'o', markersize=2, markeredgewidth=0.75, color='b',
+    ax.semilogy(x, y1, '-', markersize=2, markeredgewidth=0.75, color='b',
         fillstyle='none', label=str(player.attack_durations[i1])+'s interval')
-    ax.plot(x, y2, 'x', markersize=2, markeredgewidth=0.5, color='r',
-        fillstyle='none', label=str(player.attack_durations[i2])+'s interval')
-    # ax.plot(x, y3, ':', linewidth=1.25, color='g',
-    #     fillstyle='none', label=str(player.attack_durations[i3])+'s interval')
+    ax.plot(x, sec60, ':', markersize=2, markeredgewidth=0.75, color='k',
+        fillstyle='none', label='60 seconds')
     legend = ax.legend(loc='upper left', frameon=False, fontsize=9)
     plt.tight_layout()
     plt.show()
@@ -201,14 +216,14 @@ def mana_regen_per_stage(player, stage):
     ax.set_ylabel('Mana', fontsize=10)
     title = 'Mana Gain Per Stage, Interval: '+str(player.attack_durations[idx])+'s'
     ax.set_title(title, fontsize=11, loc=('center'))
-    ax.plot(x, y1, 'o', markersize=2, markeredgewidth=0.75, color='b',
+    ax.semilogy(x, y1, 'o', markersize=3, markeredgewidth=0.75, color='b',
         fillstyle='none', label='Mana Regen (5-stage avg)')
     if siphon_exists:
-        ax.plot(x, y2, 'x', markersize=2, markeredgewidth=0.5, color='r',
+        ax.plot(x, y2, 'x', markersize=3, markeredgewidth=0.75, color='r',
             fillstyle='none', label='Mana Siphon ('+str(int(player.taps_sec))+' taps/s)')
     if manni_exists:
-        ax.plot(x, y3, '*', markersize=2, markeredgewidth=0.5,color='g',
+        ax.plot(x, y3, '*', markersize=3, markeredgewidth=0.75,color='g',
             fillstyle='none', label='Manni Mana (avg)')
-    legend = ax.legend(loc='best', frameon=False, fontsize=9)
+    legend = ax.legend(loc='best', frameon=False, fontsize=10)
     plt.tight_layout()
     plt.show()

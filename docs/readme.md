@@ -2,7 +2,7 @@ This folder hosts the repository's [Wiki](https://metxchris.github.io/TT2-Sim/).
 
 # Todo List
 - [x] Sci notation option (you heathens).
-- [ ] Finish relic efficiency and add slider plot.
+- [x] Finish relic efficiency.
 - [ ] Finish adding blue skill-tree skills.
 - [ ] Silent March simulations.
 - [ ] Include mana calculations (in-progress).
@@ -11,6 +11,11 @@ This folder hosts the repository's [Wiki](https://metxchris.github.io/TT2-Sim/).
 - [ ] Overhaul plotting file.
 
 # Update History
+###### 22 April 2017
+* Added Relic Prestige Efficiency plot.
+* Updated most plots to have semi-log axes now; this shows some of the details better.
+###### 19 April 2017
+* Fixed bug where mana per stage plot crashed if player didn't have mana siphon or manni mana skills.
 ###### 13 April 2017
 * Added scientific notation option.
 * Tweaked how time-table handles measurement lag.
