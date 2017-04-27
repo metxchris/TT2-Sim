@@ -23,10 +23,10 @@ def dps_vs_bosshp(player, stage):
     ax.set_title('DPS and Boss HP vs. Stage',
         fontsize=11, loc=('center'))
     ax.semilogy(x, y1,
-        'o',markersize=3, markeredgewidth=0.75, color='b',
+        '-',markersize=3, markeredgewidth=0.75, color='b',
         fillstyle='none', label='Total DPS')
     ax.plot(x, y2,
-        'x',markersize=3, markeredgewidth=0.75, color='r',
+        '--',markersize=3, markeredgewidth=0.75, color='r',
         fillstyle='none', label='Boss HP')
     legend = ax.legend(loc='upper left', frameon=False)
     plt.tight_layout()
@@ -35,24 +35,48 @@ def dps_vs_bosshp(player, stage):
 def tap_damage(player, stage):
     domain1 = player.tap_damage_array[:, 0]>0
     domain2 = player.tap_damage_array[:, 1]>0
+
+    if not domain1.any() and not domain2.any():
+        print('Plotting.tap_damage: No tap damage to plot.')
+        return
+
     x1 = stage.number[domain1][::5]
-    x2 = stage.number[domain2][::5]
     y1 = player.tap_damage_array[:, 0][domain1][::5]
+    x2 = stage.number[domain2][::5]
     y2 = player.tap_damage_array[:, 1][domain2][::5]
+
+    if domain1.any() and domain2.any():
+        minX = min(x1.min(), x2.min())
+        maxX = max(x1.max(), x2.max())
+        minY = min(y1.min(), y2.min())
+        maxY = max(y1.max(), y2.max())
+    elif domain1.any():
+        minX = x1.min()
+        maxX = x1.max() + (1 if x1.min()==x1.max() else 0)
+        minY = y1.min()
+        maxY = y1.max()
+    else:
+        minX = x2.min()
+        maxX = x2.max() + (1 if x2.min()==x2.max() else 0)
+        minY = y2.min()
+        maxY = y2.max()
+
     fig = plt.figure(figsize=(6*0.75, 4.5*0.75))
     ax = fig.add_subplot(111, 
-        xlim=(min(x1), max(x1)),
-        ylim=(min(y1), max(y1)))
+        xlim=(minX, maxX),
+        ylim=(minY, 10*maxY))
     ax.set_xlabel('Stage', fontsize=10)
     ax.set_ylabel('Damage', fontsize=10)
     ax.set_title('Tap Damage Comparison',
         fontsize=11, loc=('center'))
-    ax.semilogy(x1, y1,
-        'o',markersize=3, markeredgewidth=0.75, color='b',
-        fillstyle='none', label='Sword Master + Tap from Heroes')
-    ax.plot(x2, y2,
-        'x',markersize=3, markeredgewidth=0.5, color='r',
-        fillstyle='none', label='Sword Master Only')
+    if domain1.any():
+        ax.semilogy(x1, y1,
+            '-',markersize=3, markeredgewidth=0.75, color='b',
+            fillstyle='none', label='Tap from Heroes')
+    if domain2.any():
+        ax.semilogy(x2, y2,
+            '--',markersize=3, markeredgewidth=0.5, color='r',
+            fillstyle='none', label='Sword Master')
     legend = ax.legend(loc='upper left', frameon=False)
     plt.tight_layout()
     plt.show()

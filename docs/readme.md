@@ -2,15 +2,24 @@ This folder hosts the repository's [Wiki](https://metxchris.github.io/TT2-Sim/).
 
 # Todo List
 - [x] Sci notation option (you heathens).
-- [x] Finish relic efficiency.
+- [x] Finish relic efficiency (plot only).
 - [ ] Finish adding blue skill-tree skills.
 - [ ] Silent March simulations.
 - [ ] Include mana calculations (in-progress).
-- [ ] Seconds to mins/hrs/days/years function.
+- [x] Seconds to mins/hrs/days/years function.
 - [ ] Improve documentation on formulas used.
-- [ ] Overhaul plotting file.
+- [ ] Overhaul plotting file (size options, general stability).
+- [ ] Allow for arbitrarily high stage simulations (priority).
 
 # Update History
+###### 27 April 2017
+* Fixed crash with relic efficiency when stage-cap was limited.
+* Created AdvancedOptions.CSV with many options to disable engine components (applies to all input profiles).
+* Option to specify how many levels to buy per purchase loop (Use LevelsToBuy=1 for brand new accounts).
+* Removed some options from player input files (Use AdvancedOptions.CSV now).
+* Added seconds to mins/hrs/days/yrs function.
+* Fixed some bugs related to missing player input values (e.g., not having pet:evo was ruining pet damage).
+* Tap damage plot is updated to work when a tap damage type (from heroes or sword master) is disabled.
 ###### 22 April 2017
 * Added Relic Prestige Efficiency plot.
 * Updated most plots to have semi-log axes now; this shows some of the details better.
