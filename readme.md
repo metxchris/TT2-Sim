@@ -21,7 +21,7 @@ The simulation was designed as a a basic version of the TT2 game engine.  While 
 # Sample Plots
 
 <div style="width:1000px;margin-left:150px">
-<img src="./images/SwordMaster.png" alt="Tap Damage" width="425" style="float:left; display:inline;"/><img src="./images/dps_tap20.png" alt="DPS vs. Gold" width="425" style="float:left; display:inline;"/>
+<img src="./images/SwordMaster.png" alt="Tap Damage" width="425" style="float:left; display:inline;"/><img src="./images/DPSvsGold.png" alt="DPS vs. Gold" width="425" style="float:left; display:inline;"/>
 <div style="width:1000px;margin-left:150px">
 <img src="./images/TimePerStage.png" alt="Time Per Stage" width="425" style="float:left; display:inline;"/><img src="./images/ManaPerStage.png" alt="Mana Per Stage" width="425" style="float:left; display:inline;"/>
 <div style="width:1000px;margin-left:150px">
