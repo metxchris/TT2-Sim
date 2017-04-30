@@ -1,5 +1,3 @@
-This folder hosts the repository's [Wiki](https://metxchris.github.io/TT2-Sim/).
-
 # Todo List
 - [x] Sci notation option (you heathens).
 - [x] Finish relic efficiency (plot only).
@@ -12,6 +10,10 @@ This folder hosts the repository's [Wiki](https://metxchris.github.io/TT2-Sim/).
 - [ ] Allow for arbitrarily high stage simulations (priority).
 
 # Update History
+###### 30 April 2017
+* Updated the file structure for better organization.
+* Included extras folder with additional stand-alone codes.
+* Info Docs are now current with TT2 v1.4.
 ###### 27 April 2017
 * Fixed crash with relic efficiency when stage-cap was limited.
 * Created AdvancedOptions.CSV with many options to disable engine components (applies to all input profiles).

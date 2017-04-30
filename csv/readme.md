@@ -1,1 +1,0 @@
-These CSV files contain the TT2 game data necessary to run the sim.

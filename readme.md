@@ -13,18 +13,20 @@ TT2-Sim is an analysis focused Tap Titans 2 simulator written in Python.  The de
 From using testing this tool out with others in the subreddit community, we've noticed that the answers to these questions are generally: maybe, yes, it doesn't matter, and the top simulated prediction we've recorded so far is 4895 (calculations above stage 3500 are just an extrapolation of the current model, and will need to be updated when the in-game stage cap is increased).  By entering your current configuration into the PlayerInput.csv file, you can use the simulation to test the impact obtained by changing weapon, pet, and skill-tree configurations yourself.  Moreover, this simulation works well in conjunction with well-known optimizers such as [YATTWO](https://yattwo.me/), as you will now be able to directly observe how your gameplay will change for each suggested optimization.
 
 # Running TT2-Sim
-This code was designed to run using Python v3.6+ (see comments in Classes.py for v2.7 compatibility).  In order to use TT2-Sim, you will need to download the repository to a local directory.  The easiest way to set this up with all necessary dependencies is to install the [Anaconda](https://www.continuum.io/downloads) distribution; the installation footprint is quite large compared to what's required to run the sim, but this is the easiest way to get everything working without having to manually install dependencies.  I also recommend running the code through [Sublime Text](https://www.sublimetext.com/); this will allow you to easily run the simulation directly through the text editor (press ctrl+b), instead of having to run everything through the command line.  Initiate the simulation by running the Main.py file.  The Classes.py file is a dependency needed to initialize game data, but can also be run directly to print out a full list of all input variables used in the sim.
+This code was designed to run using Python v3.6+ (see comments in Classes.py for v2.7 compatibility).  In order to use TT2-Sim, you will need to download the repository to a local directory.  The easiest way to set this up with all necessary dependencies is to install the [Anaconda](https://www.continuum.io/downloads) distribution; the installation footprint is quite large compared to what's required to run the sim, but this is the easiest way to get everything working without having to manually install dependencies.  I also recommend running the code through [Sublime Text](https://www.sublimetext.com/); this will allow you to easily run the simulation directly through the text editor (press ctrl+b), instead of having to run everything through the command line.  Initiate the simulation by running the TT2-Simulation.py file.  The DataClasses.py file is a dependency needed to initialize game data, but can also be run directly to print out a full list of all input variables used in the sim.
 
 # How It Works
 The simulation was designed as a a basic version of the TT2 game engine.  While several simplifications are made, the results provide an extremely accurate picture of your game performance in the MS800+ stage range (some of the approximations made may throw off accuracy during the earliest stages, and my ability to test these stages has been limited so far).  The code itself is well-commented, so read through the Main.py file for more details on the processes used.
 
-# Sample Plots and Analysis
+# Sample Plots
 
 <div style="width:1000px;margin-left:150px">
-<img src="./images/splash_1000_2710.png" alt="Splash Comparison" width="425" style="float:left; display:inline;"/><img src="./images/dps_tap20.png" alt="Splash Comparison" width="425" style="float:left; display:inline;"/>
+<img src="./images/SwordMaster.png" alt="Tap Damage" width="425" style="float:left; display:inline;"/><img src="./images/dps_tap20.png" alt="DPS vs. Gold" width="425" style="float:left; display:inline;"/>
+<div style="width:1000px;margin-left:150px">
+<img src="./images/TimePerStage.png" alt="Time Per Stage" width="425" style="float:left; display:inline;"/><img src="./images/ManaPerStage.png" alt="Mana Per Stage" width="425" style="float:left; display:inline;"/>
+<div style="width:1000px;margin-left:150px">
+<img src="./images/splash.png" alt="Splash Comparison" width="425" style="float:left; display:inline;"/><img src="./images/RelicEfficiency.png" alt="Relic Efficiency" width="425" style="float:left; display:inline;"/>
 </div>
-
-There is great potential for model analysis using TT2-Sim. A full overview of various of results obtained and studies performed using the sim will be posted on the repository's [Wiki](https://metxchris.github.io/TT2-Sim/).
 
 # Sample Text Output
 

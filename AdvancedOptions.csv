@@ -2,7 +2,7 @@
         5250,StageCap,(Max=5250)
         6000,HeroLevelCap,
         6000,SwordMasterLevelCap,
-        10,LevelsToBuy,(Recommended:1 to 10)
+        10,LevelsToBuy,(1 for new profiles (slower) or 10 otherwise (faster))
         0,UseScientificNotation,
         0,DisableActiveSkills,
         0,DisableArtifactBonuses,

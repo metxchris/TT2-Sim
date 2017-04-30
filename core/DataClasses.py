@@ -2,22 +2,27 @@ from __future__ import division, print_function
 import numpy as np
 from copy import deepcopy
 from math import modf
+from os import getcwd
 from ServerVarsModel import SVM
 
 """
 Notes on Python v2.7 compatibility:
-This code might still work in v2.7 if all instances of "dtype=str"
-are replaced with "dtype=np.string_", without the quotes.
+* I've made so many changes since launch that I have no idea how
+  much effort would be needed to get this to work in python 2.7 again.
 
-This file can be directly run to split out tables of all input data
-used in the simulation; just make sure your input file is correctly
-set at the bottom of this code.
+Instructions:
+* This file can be directly run to split out tables of all input data
+  used in the simulation; just make sure your input file is correctly
+  set at the bottom of this code.
 """
+
+def dir_path():
+    return '' if getcwd().split('\\')[-1]=='TT2-Sim' else '..\\'
   
 class GameData(object):
     def __init__(self, input_file):
 
-        self.input = np.genfromtxt('player\\'+input_file, delimiter=',', dtype=str)
+        self.input = np.genfromtxt(dir_path()+'player\\'+input_file, delimiter=',', dtype=str)
         self.username = input_file.split('.')[0]
         self.advanced = AdvancedOptions()
         self.artifacts = Artifacts(self.input, self.advanced)
@@ -47,7 +52,7 @@ class GameData(object):
 class AdvancedOptions(object):
     def __init__(self):
         # Pull advanced options from AdvancedOptions.CSV.
-        advanced_csv = np.genfromtxt('AdvancedOptions.csv', delimiter=',', dtype=str)
+        advanced_csv = np.genfromtxt(dir_path()+'AdvancedOptions.csv', delimiter=',', dtype=str)
         start_idx = np.array([advanced_csv[:,0]=='ADVANCED OPTIONS']).argmax()+1
         end_idx = np.array([advanced_csv[start_idx:,0]=='']).argmax()+1
         advanced_values = advanced_csv[start_idx:end_idx,0].astype(np.float)
@@ -95,7 +100,8 @@ class ActiveSkills(object):
     def __init__(self, input_csv, artifacts, advanced):
         from numpy.core import defchararray
 
-        csv_data = np.genfromtxt('csv\ActiveSkillInfo.csv', delimiter=',', dtype=str)
+        csv_data = np.genfromtxt(dir_path()+'data\\ActiveSkillInfo.csv', 
+            delimiter=',', dtype=str)
         csv_split = defchararray.rsplit(csv_data, '/')
 
         # Find active skill info in player input CSV.
@@ -149,7 +155,7 @@ class ActiveSkills(object):
 
 class Artifacts(object):
     def __init__(self, input_csv, advanced):
-        artifacts_csv = np.genfromtxt('csv\ArtifactInfo.csv', 
+        artifacts_csv = np.genfromtxt(dir_path()+'data\\ArtifactInfo.csv', 
             delimiter=',', dtype=str)
 
         # Find artifact info in player input CSV.
@@ -250,7 +256,7 @@ class Equipment(object):
         their rounded equipment multipliers directly.
         """
 
-        #equip_csv = np.genfromtxt('csv\EquipmentInfo.csv', delimiter=',', dtype=str)
+        #equip_csv = np.genfromtxt('..\\data\\EquipmentInfo.csv', delimiter=',', dtype=str)
 
         # Equipment formula:
         #double num3 = num * (this.attributeBase + this.attributeInc * (double)num2);
@@ -307,7 +313,9 @@ class Equipment(object):
 class Heroes(object):
     def __init__(self, input_csv, advanced):
         # Read CSV Files.
-        helper_info = np.genfromtxt('csv\HelperInfo.csv', 
+        helper_info = np.genfromtxt(dir_path()+'data\\HelperInfo.csv', 
+            delimiter=',', dtype=str)
+        helper_names = np.genfromtxt(dir_path()+'data\\HelperNames.csv', 
             delimiter=',', dtype=str)
         id_size = helper_info[1:,0].size
 
@@ -319,7 +327,7 @@ class Heroes(object):
 
         # Initialize Hero Information.
         self.id = helper_info[1:,0]
-        self.name = helper_info[1:,4]
+        self.name = helper_names[1:,1]
         self.unlock_order = helper_info[1:,1].astype(np.int)
         self.type = helper_info[1:,2]
         self.purchase_cost = helper_info[1:,3].astype(np.float)
@@ -349,7 +357,7 @@ class Heroes(object):
 
 class HeroImprovements(object):
     def __init__(self, level_size, advanced):
-        improvements_info = np.genfromtxt('csv\HelperImprovementsInfo.csv', 
+        improvements_info = np.genfromtxt(dir_path()+'data\\HelperImprovementsInfo.csv', 
             delimiter=',', dtype=str)   
         
         self.levels = np.zeros(improvements_info[1:,0].size+2, dtype=np.int)
@@ -366,7 +374,7 @@ class HeroImprovements(object):
 
 class HeroSkills(object):
     def __init__(self, id_size, advanced):
-        csv_data = np.genfromtxt('csv\HelperSkillId.csv', 
+        csv_data = np.genfromtxt(dir_path()+'data\\HelperSkillInfo.csv', 
             delimiter=',', dtype=str)
         self.bonus_id_tile = np.tile(csv_data[1:, 1], (id_size, 1))
         self.bonus_type_tile = np.tile(csv_data[1:, 3], (id_size, 1))
@@ -380,7 +388,7 @@ class HeroSkills(object):
 class Pets(object):
     def __init__(self, input_csv, advanced):
         # Game data.
-        pet_csv = np.genfromtxt('csv\PetInfo.csv', delimiter=',', dtype=str)
+        pet_csv = np.genfromtxt(dir_path()+'data\\PetInfo.csv', delimiter=',', dtype=str)
         dmg_base = pet_csv[1:,1].astype(np.float)
         dmg_inc = pet_csv[1:,2:5].astype(np.float)
         bonus_base = pet_csv[1:,6].astype(np.float)
@@ -465,7 +473,7 @@ class Pets(object):
 
 class SkillTree(object):
     def __init__(self, input_csv, advanced):
-        skill_tree_csv = np.genfromtxt('csv\SkillTreeInfo.csv',
+        skill_tree_csv = np.genfromtxt(dir_path()+'data\\SkillTreeInfo.csv',
             delimiter=',', dtype=str)
         skill_tree_csv[skill_tree_csv == '-'] = 'NaN' # needed for setting float type here.
 
@@ -525,7 +533,7 @@ class SkillTree(object):
 
 class SwordMaster(object):
     def __init__(self):
-        improvements_info = np.genfromtxt('csv\PlayerImprovementsInfo.csv', 
+        improvements_info = np.genfromtxt(dir_path()+'data\\PlayerImprovementsInfo.csv', 
             delimiter=',', dtype=str)   
         
         self.levels = improvements_info[1:,0].astype(np.int)
@@ -539,7 +547,7 @@ class Stage(object):
     def __init__(self, stage_cap, skill_tree, hp_multiplier, artifacts):
         # Simulation prone to crash above stage 5250.
         self.cap = min(stage_cap, 5250)
-        self.number = np.arange(self.cap + 1)
+        self.number = np.arange(self.cap + 1).astype(np.int)
 
         self.titan_hp = (SVM.monsterHPMultiplier
             * SVM.monsterHPBase1**np.minimum(self.number, SVM.monsterHPLevelOff)
@@ -646,10 +654,10 @@ def convert_time(time_in_seconds):
     """ converts a number in seconds to an appropriate unit of time. """
 
     minute = 60
-    hour = 3600
-    day = 86400
-    year = 31536000
-    century = 3153600000
+    hour = 60*minute
+    day = 24*hour
+    year = 365*day
+    century = 100*year
 
     if time_in_seconds < minute: 
         output_time = str('%.2f'%time_in_seconds)+' sec '
@@ -667,4 +675,4 @@ def convert_time(time_in_seconds):
 
 if __name__ == '__main__':
     # Run directly to print out input values.
-    GameData('YourUsername.csv').print_info()
+    GameData('SwordMaster.csv').print_info()

@@ -1,8 +1,10 @@
 from __future__ import division, print_function
+import sys
+sys.path.append('core') 
 import numpy as np
 from math import modf
 from copy import deepcopy
-from Classes import GameData, notate, convert_time
+from DataClasses import GameData, notate, convert_time
 from ServerVarsModel import SVM
 import Plotting
 
@@ -758,8 +760,8 @@ class Player(object):
             strike_dps = (self.heavenly_strike
                 * self.tap_with_avg_crit_array/strike_duration)
             attacks, active, wasted, __ = performance_analysis(strike_duration,
-                                                           strike_dps,
-                                                           0)
+                                                               strike_dps,
+                                                               0)
             self.hs_performance[0] = attacks.sum()
             self.hs_performance[1] = active.sum()
             self.hs_performance[2] = wasted.sum() + transition_time
@@ -1030,7 +1032,7 @@ def run_simulation(input_csv, silent=False):
 
 
 if __name__ == '__main__':
-    player, stage = run_simulation('YourUsername.csv')
+    player, stage = run_simulation('SwordMaster.csv')
 
     # Plotting.relic_efficiency(player, stage)
     # Plotting.mana_regen_per_stage(player, stage)

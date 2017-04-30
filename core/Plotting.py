@@ -1,6 +1,6 @@
 from __future__ import division, print_function
 import numpy as np
-from Classes import GameData, notate
+from DataClasses import GameData, notate
 from ServerVarsModel import SVM
 import matplotlib.pyplot as plt
 
