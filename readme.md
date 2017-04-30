@@ -25,7 +25,7 @@ The simulation was designed as a a basic version of the TT2 game engine.  While 
 <div style="width:1000px;margin-left:150px">
 <img src="./images/TimePerStage.png" alt="Time Per Stage" width="425" style="float:left; display:inline;"/><img src="./images/ManaPerStage.png" alt="Mana Per Stage" width="425" style="float:left; display:inline;"/>
 <div style="width:1000px;margin-left:150px">
-<img src="./images/splash.png" alt="Splash Comparison" width="425" style="float:left; display:inline;"/><img src="./images/RelicEfficiency.png" alt="Relic Efficiency" width="425" style="float:left; display:inline;"/>
+<img src="./images/Splash.png" alt="Splash Comparison" width="425" style="float:left; display:inline;"/><img src="./images/RelicEfficiency.png" alt="Relic Efficiency" width="425" style="float:left; display:inline;"/>
 </div>
 
 # Sample Text Output
