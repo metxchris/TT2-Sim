@@ -16,7 +16,7 @@ From using testing this tool out with others in the subreddit community, we've n
 This code was designed to run using Python v3.6+ (see comments in Classes.py for v2.7 compatibility).  In order to use TT2-Sim, you will need to download the repository to a local directory.  The easiest way to set this up with all necessary dependencies is to install the [Anaconda](https://www.continuum.io/downloads) distribution; the installation footprint is quite large compared to what's required to run the sim, but this is the easiest way to get everything working without having to manually install dependencies.  I also recommend running the code through [Sublime Text](https://www.sublimetext.com/); this will allow you to easily run the simulation directly through the text editor (press ctrl+b), instead of having to run everything through the command line.  Initiate the simulation by running the TT2-Simulation.py file.  The DataClasses.py file is a dependency needed to initialize game data, but can also be run directly to print out a full list of all input variables used in the sim.
 
 # How It Works
-The simulation was designed as a a basic version of the TT2 game engine.  While several simplifications are made, the results provide an extremely accurate picture of your game performance in the MS800+ stage range (some of the approximations made may throw off accuracy during the earliest stages, and my ability to test these stages has been limited so far).  The code itself is well-commented, so read through the Main.py file for more details on the processes used.
+The simulation was designed as a a basic version of the TT2 game engine.  While several simplifications are made, the results provide an extremely accurate picture of your game performance in the MS800+ stage range (some of the approximations made may throw off accuracy during the earliest stages, and my ability to test these stages has been limited so far).  The code itself is well-commented, so read through the TT2-Simulation.py file for more details on the processes used.
 
 # Sample Plots
 
@@ -33,14 +33,14 @@ The simulation was designed as a a basic version of the TT2 game engine.  While 
 ```
     GENERAL RESULTS FOR: MetxChris
     ―――――――――――――――――――――――――――――――――――――――――
-    Final Stage: 3875       Boss HP: 367.89cp
-    Start Stage: 1100       Damage:  207.14cp
+    Final Stage: 4020       Boss HP:  18.28cs
+    Start Stage: 1250       Damage:   11.21cs
     ――――――――――――――――――――――――――――――――――――――――――――――――――――――
-    Hero Levels: [4000 4000 4000 4000 4000 4000 4000 4000] 
-                 [4000 4000 4000 4000 4000 4000 4000 4000] 
-                 [4000 4000 4000 4000 4000 4000 4000 4000] 
-                 [4000 4000 4000 4000 4000 4000 4000 3800] 
-                 [3460 3040 2540 2540 2540] Total: 141920
+    Hero Levels: [6000 6000 6000 6000 6000 6000 6000 6000] 
+                 [6000 6000 6000 6000 6000 6000 6000 6000] 
+                 [6000 6000 6000 6000 6000 6000 6000 6000] 
+                 [5940 5800 5610 5360 5090 4760 4410 4050] 
+                 [3710 3290 2790 2790 2790] Total: 200390
 
 
     ACTIVE SKILL INFO:
@@ -49,7 +49,7 @@ The simulation was designed as a a basic version of the TT2 game engine.  While 
     ―――――――――――――――――――――――――――――――――――――
     Crit Strike          15        50.00%
     Hand of Midas        15         13.80
-    War Cry              15         1.03k
+    War Cry              15         1.40k
     ―――――――――――――――――――――――――――――――――――――
 
 
@@ -57,35 +57,35 @@ The simulation was designed as a a basic version of the TT2 game engine.  While 
     ―――――――――――――――――――――――――――――――――――――――
     Type            Amount        Bonus    
     ―――――――――――――――――――――――――――――――――――――――
-    Total DPS        812.34co      11.40ab%
-    Hero DPS         731.75cm       16.00B%
-    Melee DPS        731.49cm        1.19B%
-    Ranged DPS       167.02cl      202.89k%
-    Spell DPS:        90.67cl      110.12k%
-    Pet DMG:         609.24co       90.28M%
-    Tap DMG:          11.71cm      212.17k%
-    Clan DMG:          7.32cn        4.07T%
+    Total DPS        373.79cr     415.75ab%
+    Hero DPS         109.83cp      196.40B%
+    Melee DPS        109.80cp        2.49B%
+    Ranged DPS        24.77co      561.11k%
+    Spell DPS:         5.82co      131.83k%
+    Pet DMG:         280.34cr      276.79M%
+    Tap DMG:           1.76cp        1.46M%
+    Clan DMG:          1.10cq       17.58T%
     ―――――――――――――――――――――――――――――――――――――――
     Crit Chance:                     50.00%
     Crit Max:          196.99
     Crit Min:           29.55
     ―――――――――――――――――――――――――――――――――――――――
-    Artifact:                      377.07k%
+    Artifact DMG:                   494.76k%
 
 
     GOLD RESULTS:
     ―――――――――――――――――――――――――――――――――――――――
     Type             Amount      Multiplier
     ―――――――――――――――――――――――――――――――――――――――
-    Total Earned     550.76cs        10.75k
-    Boss Gold        547.07cs        200.80
-    Chest Gold         3.54cs         40.70
-    Titan Gold       149.82cr         58.13
+    Total Earned     238.07cv        93.48k
+    Boss Gold        236.36cv        200.80
+    Chest Gold         1.64cv         44.77
+    Titan Gold        75.68cu         69.75
     TF Chance           1.00%          1.02 †
     10x Chance         22.00%          2.98 ‡
     ―――――――――――――――――――――――――――――――――――――――
-    Remaining         23.05cs
-    Spent            527.71cs
+    Remaining         47.87cv
+    Spent            190.20cv
     ―――――――――――――――――――――――――――――――――――――――
     † Does not multiply with HoM or Bosses.
     ‡ Does not multiply with HoM.
@@ -93,54 +93,54 @@ The simulation was designed as a a basic version of the TT2 game engine.  While 
 
     SPLASH RESULTS BY STAGE (PET ATTACKS):
     ――――――――――――――――――――――――――――――――――――――――――――――――――――
-    Splash Amount    Maximum Splash       Minimum Splash
+    Splash Amount    Splash Maximum         Splash Floor
     ――――――――――――――――――――――――――――――――――――――――――――――――――――
-              x20              3695                 3553
-               x4              3727                 3686
-               x3              3729                 3709
-               x2              3731                 3711
-               x1              3754                 3714
+              x20              3906                 3887
+               x4              3936                 3918
+               x3              3938                 3920
+               x2              3940                 3922
+               x1              3962                 3925
     ――――――――――――――――――――――――――――――――――――――――――――――――――――
-    Splash Factor: 0.0636
+    Splash Factor: 0.0705
 
 
     HERO EVOLVE STAGES:
     ――――――――――――――――――――――――――――――――――――――――――――――――――――――
-    1st Evolve:  [1100 1100 1100 1100 1100 1100 1100 1100] 
-                 [1100 1100 1100 1100 1100 1100 1100 1100] 
-                 [1100 1100 1100 1100 1100 1100 1100 1100] 
-                 [1100 1101 1121 1281 1456 1665 1893 2119] 
-                 [2336 2610 2923 2923 2923]
-    2nd Evolve:  [1100 1101 1101 1101 1101 1101 1101 1101] 
-                 [1110 1126 1139 1156 1176 1204 1215 1236] 
-                 [1256 1287 1315 1346 1371 1405 1447 1496] 
-                 [1554 1641 1764 1919 2094 2303 2532 2758] 
-                 [2973 3247 3562 3562 3562]
+    1st Evolve:  [1250 1250 1250 1250 1250 1250 1250 1250] 
+                 [1250 1250 1250 1250 1250 1250 1250 1250] 
+                 [1250 1250 1250 1250 1250 1250 1250 1250] 
+                 [1250 1250 1250 1265 1439 1647 1875 2101] 
+                 [2318 2591 2905 2905 2905]
+    2nd Evolve:  [1250 1250 1250 1250 1250 1250 1250 1250] 
+                 [1250 1250 1250 1251 1251 1251 1251 1251] 
+                 [1252 1271 1296 1329 1353 1387 1430 1479] 
+                 [1536 1624 1746 1901 2076 2286 2515 2740] 
+                 [2956 3226 3545 3545 3545]
 
 
-    ATTACKS AND TIMES TO REACH STAGE: 3875
+    ATTACKS AND TIMES TO REACH STAGE: 4020
     ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
     Attack Interval    Attacks      Active Time      Wasted Time       Total Time
     ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-            0.1 sec     46.05k       79.67 mins      144.65 mins      224.32 mins
-            0.2 sec     29.21k       94.25 mins      143.05 mins      237.30 mins
-            0.3 sec     22.88k      111.67 mins      142.12 mins      253.79 mins
-            0.4 sec     19.51k       90.07 mins      141.45 mins      231.52 mins
-            0.5 sec     17.45k      120.75 mins      140.92 mins      261.67 mins
-            0.6 sec     16.03k      151.08 mins      140.48 mins      291.56 mins
-            0.7 sec     15.01k       66.73 mins      140.09 mins      206.82 mins
-            0.8 sec     14.26k       81.61 mins      139.82 mins      221.43 mins
-            0.9 sec     13.64k       96.19 mins      139.57 mins      235.76 mins
-            1.0 sec     13.17k      111.04 mins      139.38 mins      250.42 mins
-            1.5 sec     11.70k      184.46 mins      138.34 mins      322.80 mins
-            2.0 sec     10.91k      256.02 mins      137.69 mins      393.71 mins
-            3.0 sec     10.16k      401.09 mins      136.69 mins      537.78 mins
+            0.1 sec     12.77k       14.36 mins        1.82 hrs         2.06 hrs 
+            0.2 sec      9.76k       15.68 mins        1.81 hrs         2.07 hrs 
+            0.3 sec      8.79k       27.21 mins        1.80 hrs         2.25 hrs 
+            0.4 sec      8.27k       14.74 mins        1.79 hrs         2.04 hrs 
+            0.5 sec      8.00k       38.20 mins        1.79 hrs         2.42 hrs 
+            0.6 sec      7.78k        1.02 hrs         1.78 hrs         2.80 hrs 
+            0.7 sec      7.65k        1.18 hrs         1.78 hrs         2.96 hrs 
+            0.8 sec      7.53k       13.45 mins        1.78 hrs         2.00 hrs 
+            0.9 sec      7.45k       24.94 mins        1.77 hrs         2.19 hrs 
+            1.0 sec      7.38k       36.35 mins        1.77 hrs         2.38 hrs 
+            1.5 sec      7.18k        1.56 hrs         1.76 hrs         3.32 hrs 
+            2.0 sec      7.06k        2.50 hrs         1.75 hrs         4.25 hrs 
+            3.0 sec      6.95k        4.38 hrs         1.74 hrs         6.12 hrs 
     ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-    Tap Attacks          5.99B     4915.52 days        0.13 days     4915.65 days
-    Heav. Strikes      461.31k       21.40 days        0.11 days       21.51 days
-    Pet Attacks         14.60k       74.01 mins      139.97 mins      213.98 mins
+    Tap Attacks          2.20B        3.49 yrs         2.21 hrs         3.50 yrs 
+    Heav. Strikes      131.81k        6.04 days        1.90 hrs         6.12 days
+    Pet Attacks          7.58k        7.74 mins        1.78 hrs         1.91 hrs 
     ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
-    KillAnimationTime + DeviceLag: 0.7 sec
+    KillAnimationTime + DeviceLag + MeasurementLag: 0.75 sec
 ```
 
 # Credit
