@@ -1,18 +1,10 @@
-# Todo List
-- [x] Sci notation option (you heathens).
-- [x] Finish relic efficiency (plot only).
-- [ ] Finish adding blue skill-tree skills.
-- [ ] Silent March simulations.
-- [ ] Include mana calculations (in-progress).
-- [x] Seconds to mins/hrs/days/years function.
-- [ ] Improve documentation on formulas used.
-- [ ] Overhaul plotting file (size options, general stability).
-- [ ] Allow for arbitrarily high stage simulations (priority).
-
 # Update History
+###### 2 May 2017
+* Rolled back file-structure update after several bug reports.
+* Deleted extras folder to keep the presentation simple.
 ###### 30 April 2017
-* Updated the file structure for better organization.
-* Included extras folder with additional stand-alone codes.
+* ~Updated the file structure for better organization.~
+* ~Included extras folder with additional stand-alone codes.~
 * Info Docs are now current with TT2 v1.4.
 ###### 27 April 2017
 * Fixed crash with relic efficiency when stage-cap was limited.

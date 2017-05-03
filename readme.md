@@ -4,22 +4,12 @@
 
 *See how to calibrate the time-table for your device [here](https://github.com/metxchris/TT2-Sim/blob/master/docs/calibration.md#device-calibration).*
 
-TT2-Sim is an analysis focused Tap Titans 2 simulator written in Python.  The design goal of this simulator was to answer several of the many infamous subreddit questions, such as:
-- Is it worth buying this thing?
-- Can I push to this stage?
-- How should I pick my skill-tree?
-- How high could I push if there wasn't a stage cap?
-
-From using testing this tool out with others in the subreddit community, we've noticed that the answers to these questions are generally: maybe, yes, it doesn't matter, and the top simulated prediction we've recorded so far is 4895 (calculations above stage 3500 are just an extrapolation of the current model, and will need to be updated when the in-game stage cap is increased).  By entering your current configuration into the PlayerInput.csv file, you can use the simulation to test the impact obtained by changing weapon, pet, and skill-tree configurations yourself.  Moreover, this simulation works well in conjunction with well-known optimizers such as [YATTWO](https://yattwo.me/), as you will now be able to directly observe how your gameplay will change for each suggested optimization.
+TT2-Sim is an analysis focused Tap Titans 2 simulator written in Python. By entering your current configuration into the SwordMaster.csv file, you can use the simulation to test the impact obtained by changing weapon, pet, and skill-tree configurations yourself.  Moreover, this simulation works well in conjunction with well-known optimizers such as [YATTWO](https://yattwo.me/), as you will now be able to directly observe how your gameplay will change for each suggested optimization.
 
 # Running TT2-Sim
-This code was designed to run using Python v3.6+ (see comments in Classes.py for v2.7 compatibility).  In order to use TT2-Sim, you will need to download the repository to a local directory.  The easiest way to set this up with all necessary dependencies is to install the [Anaconda](https://www.continuum.io/downloads) distribution; the installation footprint is quite large compared to what's required to run the sim, but this is the easiest way to get everything working without having to manually install dependencies.  I also recommend running the code through [Sublime Text](https://www.sublimetext.com/); this will allow you to easily run the simulation directly through the text editor (press ctrl+b), instead of having to run everything through the command line.  Initiate the simulation by running the TT2-Simulation.py file.  The DataClasses.py file is a dependency needed to initialize game data, but can also be run directly to print out a full list of all input variables used in the sim.
-
-# How It Works
-The simulation was designed as a a basic version of the TT2 game engine.  While several simplifications are made, the results provide an extremely accurate picture of your game performance in the MS800+ stage range (some of the approximations made may throw off accuracy during the earliest stages, and my ability to test these stages has been limited so far).  The code itself is well-commented, so read through the TT2-Simulation.py file for more details on the processes used.
+This code was designed to run using Python v3.6+ (see comments in Classes.py for v2.7 compatibility).  In order to use TT2-Sim, you will need to download the repository to a local directory.  The easiest way to set this up with all necessary dependencies is to install the [Anaconda](https://www.continuum.io/downloads) distribution; the installation footprint is quite large compared to what's required to run the sim, but this is the easiest way to get everything working without having to manually install dependencies.  I also recommend running the code through [Sublime Text 3](https://www.sublimetext.com/) (non-portable); this will allow you to easily run the simulation directly through the text editor (press ctrl+b), instead of having to run everything through the command line.  Initiate the simulation by running the Simulation.py file.  The DataClasses.py file is a dependency needed to initialize game data, but can also be run directly to print out a full list of all input variables used in the sim.
 
 # Sample Plots
-
 <div style="width:1000px;margin-left:150px">
 <img src="./images/SwordMaster.png" alt="Tap Damage" width="425" style="float:left; display:inline;"/><img src="./images/DPSvsGold.png" alt="DPS vs. Gold" width="425" style="float:left; display:inline;"/>
 <div style="width:1000px;margin-left:150px">
