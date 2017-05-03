@@ -817,7 +817,7 @@ class Player(object):
                 '\n\t\t\t\t', self.hero_level[32:], 
                 'Total:', self.hero_level.sum())
 
-        if self.active_skills.max()>1:
+        if self.active_skills.sum()>2:
             c1, c2, c3 = (13, 9, 13)
             hline = '\t'+'\u2015'*(c1+c2+c3+2)
             print('\n\n\t'+'ACTIVE SKILL INFO:')
